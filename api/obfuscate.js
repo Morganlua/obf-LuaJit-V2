@@ -26,13 +26,33 @@ export default async function handler(req, res) {
       return res.status(400).json({ success: false, error: "Syntax Error: " + fengari.to_jsstring(err) });
     }
 
-    // 3. Dump bytecode biner murni (MENGHINDARI to_jsstring agar bebas dari error UTF-8)
+    // 3. Dump bytecode biner dengan penanganan pointer Fengari yang aman
     let binaryChunks = [];
     lua.lua_dump(L, (L, p, sz, ud) => {
       const bytes = [];
-      for (let i = 0; i < sz; i++) {
-        bytes.push(p.charCodeAt(i));
+      
+      // Deteksi format pointer/data dari Fengari secara aman
+      if (typeof p === 'string') {
+        for (let i = 0; i < sz; i++) {
+          bytes.push(p.charCodeAt(i));
+        }
+      } else if (p && typeof p.array !== 'undefined') {
+        const idx = p.index || 0;
+        for (let i = 0; i < sz; i++) {
+          bytes.push(p.array[idx + i]);
+        }
+      } else if (p && p.buffer) {
+        const view = new Uint8Array(p.buffer, p.byteOffset || 0, sz);
+        for (let i = 0; i < sz; i++) {
+          bytes.push(view[i]);
+        }
+      } else {
+        // Fallback universal
+        for (let i = 0; i < sz; i++) {
+          bytes.push(Number(p[i] || 0));
+        }
       }
+
       binaryChunks.push(Buffer.from(bytes));
       return 0;
     }, null, 1);
@@ -54,4 +74,5 @@ export default async function handler(req, res) {
   } catch (err) {
     return res.status(500).json({ success: false, error: err.message });
   }
-}
+  }
+  
