@@ -1,242 +1,275 @@
 <!DOCTYPE html>
 <html lang="id">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Obfuscator LuaJit Bytecode 5.1 For safe</title>
-  
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@500;700&family=Space+Grotesk:wght@700;900&display=swap" rel="stylesheet">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MORGAN LUA OBFUSCATOR</title>
+    <!-- Google Fonts: Space Grotesk biar ala Neo-Brutalism -->
+    <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;700&display=swap" rel="stylesheet">
+    <style>
+        * {
+            box-sizing: border-box;
+            font-family: 'Space Grotesk', sans-serif;
+        }
 
-  <style>
-    :root {
-      --bg-color: #ffe600;
-      --card-bg: #ffffff;
-      --text-color: #000000;
-      --accent-pink: #ff007f;
-      --accent-green: #00ff66;
-      --accent-cyan: #00f0ff;
-      --border-style: 4px solid #000000;
-      --shadow-hard: 6px 6px 0px #000000;
-      --shadow-pressed: 2px 2px 0px #000000;
-    }
+        body {
+            background-color: #FFFDF9;
+            background-image: radial-gradient(#000 1px, transparent 1px);
+            background-size: 20px 20px;
+            margin: 0;
+            padding: 20px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+        }
 
-    * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Space Grotesk', sans-serif; }
-    body { background-color: var(--bg-color); color: var(--text-color); min-height: 100vh; padding: 20px; display: flex; flex-direction: column; align-items: center; }
-    .container { width: 100%; max-width: 950px; }
+        .container {
+            width: 100%;
+            max-width: 600px;
+            background: #FFDE59;
+            border: 4px solid #000;
+            box-shadow: 8px 8px 0px #000;
+            padding: 30px;
+        }
 
-    header { background: var(--card-bg); border: var(--border-style); box-shadow: var(--shadow-hard); padding: 24px; margin-bottom: 25px; text-align: center; }
-    header h1 { font-size: 1.8rem; font-weight: 900; text-transform: uppercase; background: var(--accent-cyan); display: inline-block; padding: 6px 14px; border: 3px solid #000; box-shadow: 4px 4px 0px #000; margin-bottom: 10px; }
-    header p { font-family: 'Fira Code', monospace; font-weight: 700; font-size: 0.85rem; background: var(--accent-pink); color: #fff; display: inline-block; padding: 4px 10px; border: 2px solid #000; }
+        h1 {
+            font-size: 28px;
+            font-weight: 700;
+            text-transform: uppercase;
+            margin-top: 0;
+            margin-bottom: 20px;
+            background: #000;
+            color: #FFF;
+            padding: 10px;
+            text-align: center;
+            border: 3px solid #000;
+        }
 
-    .panel-group { background: var(--card-bg); border: var(--border-style); box-shadow: var(--shadow-hard); padding: 16px; margin-bottom: 20px; display: flex; flex-direction: column; gap: 12px; }
-    .input-row { display: flex; flex-direction: column; gap: 6px; }
-    .input-row label { font-weight: 900; font-size: 0.85rem; text-transform: uppercase; }
-    .input-row input[type="text"] { padding: 10px; font-family: 'Fira Code', monospace; font-size: 0.85rem; border: 3px solid #000; font-weight: 700; outline: none; }
-    .file-input-hidden { display: none; }
+        .label {
+            font-weight: 700;
+            margin-bottom: 8px;
+            display: block;
+            text-transform: uppercase;
+            font-size: 14px;
+        }
 
-    .editor-grid { display: grid; grid-template-columns: 1fr; gap: 20px; }
-    @media (min-width: 768px) { .editor-grid { grid-template-columns: 1fr 1fr; } }
+        /* Drop Zone Area */
+        .drop-zone {
+            background: #FFF;
+            border: 4px dashed #000;
+            padding: 30px;
+            text-align: center;
+            cursor: pointer;
+            margin-bottom: 20px;
+            transition: background 0.1s ease;
+        }
 
-    .box { background: var(--card-bg); border: var(--border-style); box-shadow: var(--shadow-hard); padding: 18px; display: flex; flex-direction: column; }
-    .box-title { font-size: 1.1rem; font-weight: 900; text-transform: uppercase; margin-bottom: 12px; display: flex; align-items: center; justify-content: space-between; border-bottom: 3px solid #000; padding-bottom: 8px; }
-    .badge { font-family: 'Fira Code', monospace; font-size: 0.75rem; padding: 2px 8px; border: 2px solid #000; background: var(--bg-color); font-weight: bold; }
+        .drop-zone.dragover {
+            background: #FF99C8;
+        }
 
-    textarea { width: 100%; height: 260px; font-family: 'Fira Code', monospace; font-size: 0.85rem; padding: 12px; border: 3px solid #000; background-color: #fafafa; color: #000; resize: vertical; outline: none; font-weight: 500; }
-    textarea:focus { background-color: #fff; }
+        .drop-zone p {
+            margin: 0;
+            font-weight: 700;
+            font-size: 16px;
+        }
 
-    .button-group { display: flex; gap: 10px; margin-top: 12px; flex-wrap: wrap; }
-    .btn { font-family: 'Space Grotesk', sans-serif; font-size: 0.95rem; font-weight: 900; text-transform: uppercase; padding: 10px 16px; border: var(--border-style); background: var(--accent-green); color: #000; cursor: pointer; box-shadow: var(--shadow-hard); transition: all 0.1s ease; display: inline-flex; align-items: center; justify-content: center; user-select: none; text-decoration: none; }
-    .btn:hover { transform: translate(-2px, -2px); box-shadow: 8px 8px 0px #000; }
-    .btn:active { transform: translate(3px, 3px); box-shadow: var(--shadow-pressed); }
-    .btn-cyan { background: var(--accent-cyan); }
-    .btn-pink { background: var(--accent-pink); color: #fff; }
-    .btn-yellow { background: var(--bg-color); }
+        /* Input & Textarea Neo-Brutalism Style */
+        input[type="text"], textarea {
+            width: 100%;
+            border: 4px solid #000;
+            padding: 12px;
+            font-weight: 700;
+            font-size: 15px;
+            background: #FFF;
+            box-shadow: 4px 4px 0px #000;
+            margin-bottom: 20px;
+            outline: none;
+        }
 
-    #statusBar { display: none; margin-top: 20px; padding: 12px; border: var(--border-style); box-shadow: var(--shadow-hard); font-family: 'Fira Code', monospace; font-weight: 700; font-size: 0.85rem; text-align: center; }
-    .status-loading { background: var(--bg-color); color: #000; }
-    .status-success { background: var(--accent-green); color: #000; }
-    .status-error { background: var(--accent-pink); color: #fff; }
+        textarea {
+            resize: vertical;
+            height: 150px;
+        }
 
-    footer { margin-top: 35px; margin-bottom: 20px; font-family: 'Fira Code', monospace; font-size: 0.8rem; font-weight: 700; text-align: center; background: #000; color: #fff; padding: 8px 16px; border: 3px solid #000; box-shadow: 4px 4px 0px var(--card-bg); }
-  </style>
+        /* Tombol Aksi */
+        .btn-group {
+            display: flex;
+            gap: 15px;
+        }
+
+        button {
+            flex: 1;
+            background: #FF5757;
+            color: #FFF;
+            border: 4px solid #000;
+            padding: 15px;
+            font-weight: 700;
+            font-size: 16px;
+            text-transform: uppercase;
+            cursor: pointer;
+            box-shadow: 4px 4px 0px #000;
+            transition: transform 0.1s, box-shadow 0.1s;
+        }
+
+        button:active {
+            transform: translate(2px, 2px);
+            box-shadow: 2px 2px 0px #000;
+        }
+
+        button.btn-blue {
+            background: #4361EE;
+        }
+
+        button:disabled {
+            background: #ccc;
+            border-color: #666;
+            color: #666;
+            cursor: not-allowed;
+            box-shadow: none;
+            transform: none;
+        }
+
+        #status {
+            margin-top: 15px;
+            font-weight: 700;
+            text-align: center;
+            font-size: 14px;
+        }
+    </style>
 </head>
 <body>
 
-  <div class="container">
-    <header>
-      <h1>Obfuscator LuaJit Bytecode 5.1 For safe</h1>
-      <br>
-      <p>MONETLOADER & MOONLOADER SA-MP PROTECTOR</p>
-    </header>
+    <div class="container">
+        <h1>Morgan Obfuscator</h1>
 
-    <div class="panel-group">
-      <div class="input-row">
-        <label>1. Upload Script Lua (.lua)</label>
-        <input type="file" id="fileUpload" class="file-input-hidden" accept=".lua,.txt">
-        <button type="button" class="btn btn-yellow" onclick="document.getElementById('fileUpload').click()">📁 Pilih File Lua Dari Perangkat</button>
-      </div>
+        <!-- Drop Zone File -->
+        <span class="label">Upload File .lua (Drag & Drop atau Klik)</span>
+        <div id="dropZone" class="drop-zone">
+            <p>📁 Seret file .lua ke sini atau klik untuk pilih file</p>
+            <input type="file" id="fileInput" accept=".lua" style="display: none;">
+        </div>
 
-      <div class="input-row" style="margin-top: 8px;">
-        <label for="outputFileName">2. Nama File Hasil Download (.luac):</label>
-        <input type="text" id="outputFileName" value="script_protected.luac" placeholder="contoh: script_v1.luac">
-      </div>
+        <span class="label">Atau Ketik / Paste Kode Lua</span>
+        <textarea id="codeSource" placeholder="Paste kode Lua kamu di sini..."></textarea>
+
+        <span class="label">Nama File Hasil Download</span>
+        <input type="text" id="fileNameInput" value="protected_script" placeholder="Contoh: my_script">
+
+        <div class="btn-group">
+            <button id="btnProcess">Proses</button>
+            <button id="btnDownload" class="btn-blue" disabled>Download</button>
+        </div>
+
+        <div id="status"></div>
     </div>
 
-    <div class="editor-grid">
-      <div class="box">
-        <div class="box-title">
-          <span>Source Code Lua</span>
-          <span class="badge">INPUT</span>
-        </div>
-        <textarea id="luaInput" placeholder="-- Ketik atau upload script Lua MonetLoader kamu di sini...&#10;function main()&#10;    sampAddChatMessage('Protected by LuaJIT', -1)&#10;end"></textarea>
-        
-        <div class="button-group">
-          <button class="btn" id="btnObfuscate">⚡ PROTECT / COMPILE</button>
-          <button class="btn btn-pink" id="btnClear">CLEAR</button>
-        </div>
-      </div>
+    <script>
+        const dropZone = document.getElementById('dropZone');
+        const fileInput = document.getElementById('fileInput');
+        const codeSource = document.getElementById('codeSource');
+        const fileNameInput = document.getElementById('fileNameInput');
+        const btnProcess = document.getElementById('btnProcess');
+        const btnDownload = document.getElementById('btnDownload');
+        const statusDiv = document.getElementById('status');
 
-      <div class="box">
-        <div class="box-title">
-          <span>Protected Output Preview</span>
-          <span class="badge">OUTPUT</span>
-        </div>
-        <textarea id="luaOutput" readonly placeholder="-- Preview status kompilasi akan muncul di sini..."></textarea>
-        
-        <div class="button-group">
-          <button class="btn btn-cyan" id="btnCopy">📋 COPY PREVIEW</button>
-          <button class="btn" id="btnDownload">💾 DOWNLOAD .LUAC</button>
-        </div>
-      </div>
-    </div>
+        let protectedResultCode = "";
 
-    <div id="statusBar"></div>
+        // Event Klik Dropzone buat pilih file
+        dropZone.addEventListener('click', () => fileInput.click());
 
-    <footer>
-      MONETLOADER SA-MP 5.1 OBFUSCATOR ENGINE &copy; 2026
-    </footer>
-  </div>
-
-  <script>
-    const luaInput = document.getElementById('luaInput');
-    const luaOutput = document.getElementById('luaOutput');
-    const fileUpload = document.getElementById('fileUpload');
-    const outputFileName = document.getElementById('outputFileName');
-    const btnObfuscate = document.getElementById('btnObfuscate');
-    const btnClear = document.getElementById('btnClear');
-    const btnCopy = document.getElementById('btnCopy');
-    const btnDownload = document.getElementById('btnDownload');
-    const statusBar = document.getElementById('statusBar');
-
-    let currentBase64Data = "";
-
-    function showStatus(msg, type) {
-      statusBar.style.display = 'block';
-      statusBar.className = '';
-      statusBar.textContent = msg;
-      if (type === 'loading') statusBar.classList.add('status-loading');
-      if (type === 'success') statusBar.classList.add('status-success');
-      if (type === 'error') statusBar.classList.add('status-error');
-    }
-
-    function hideStatus() { statusBar.style.display = 'none'; }
-
-    fileUpload.addEventListener('change', (event) => {
-      const file = event.target.files[0];
-      if (!file) return;
-      outputFileName.value = 'protected_' + file.name.replace(/\.[^/.]+$/, "") + ".luac";
-
-      const reader = new FileReader();
-      reader.onload = function(e) {
-        luaInput.value = e.target.result;
-        showStatus(`[SUCCESS] File "${file.name}" berhasil dimuat!`, 'success');
-        setTimeout(hideStatus, 3000);
-      };
-      reader.readAsText(file);
-    });
-
-    btnObfuscate.addEventListener('click', async () => {
-      const code = luaInput.value.trim();
-      if (!code) {
-        showStatus('[ERROR] Kode Lua input masih kosong!', 'error');
-        return;
-      }
-
-      showStatus('[PROCESSING] Mengompilasi Bytecode LuaJIT 5.1...', 'loading');
-      btnObfuscate.disabled = true;
-
-      try {
-        const response = await fetch('/api/obfuscate', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ code: code })
+        fileInput.addEventListener('change', (e) => {
+            const file = e.target.files[0];
+            if (file) handleFile(file);
         });
 
-        const data = await response.json();
+        // Drag and Drop Events
+        dropZone.addEventListener('dragover', (e) => {
+            e.preventDefault();
+            dropZone.classList.add('dragover');
+        });
 
-        if (response.ok && data.success) {
-          luaOutput.value = data.result;
-          currentBase64Data = data.base64Data;
-          showStatus('[SUCCESS] Berhasil dikompilasi ke bytecode biner `.luac`!', 'success');
-        } else {
-          showStatus(`[SERVER ERROR] ${data.error || 'Gagal memproses kode.'}`, 'error');
+        dropZone.addEventListener('dragleave', () => {
+            dropZone.classList.remove('dragover');
+        });
+
+        dropZone.addEventListener('drop', (e) => {
+            e.preventDefault();
+            dropZone.classList.remove('dragover');
+            const file = e.dataTransfer.files[0];
+            if (file) handleFile(file);
+        });
+
+        function handleFile(file) {
+            // Ambil nama file asli (tanpa ekstensi .lua) untuk otomatis isi nama file output
+            const originalName = file.name.replace(/\.[^/.]+$/, "");
+            fileNameInput.value = originalName + "_protected";
+
+            const reader = new FileReader();
+            reader.onload = (e) => {
+                codeSource.value = e.target.result;
+                statusDiv.innerText = "File " + file.name + " berhasil dimuat!";
+                statusDiv.style.color = "green";
+            };
+            reader.readAsText(file);
         }
-      } catch (err) {
-        showStatus(`[CONNECTION ERROR] Gagal menghubungi backend API: ${err.message}`, 'error');
-      } finally {
-        btnObfuscate.disabled = false;
-      }
-    });
 
-    btnClear.addEventListener('click', () => {
-      luaInput.value = '';
-      luaOutput.value = '';
-      fileUpload.value = '';
-      currentBase64Data = "";
-      hideStatus();
-    });
+        // Tombol Proses Obfuscate ke Vercel API
+        btnProcess.addEventListener('click', async () => {
+            const code = codeSource.value.trim();
+            if (!code) {
+                alert("Kode Lua masih kosong!");
+                return;
+            }
 
-    btnCopy.addEventListener('click', () => {
-      if (!luaOutput.value) {
-        showStatus('[ERROR] Belum ada hasil untuk disalin!', 'error');
-        return;
-      }
-      navigator.clipboard.writeText(luaOutput.value);
-      showStatus('[COPIED] Preview berhasil disalin!', 'success');
-      setTimeout(hideStatus, 3000);
-    });
+            btnProcess.disabled = true;
+            statusDiv.innerText = "Sedang meng-obfuscate kode...";
+            statusDiv.style.color = "#000";
 
-    btnDownload.addEventListener('click', () => {
-      if (!currentBase64Data) {
-        showStatus('[ERROR] Belum ada bytecode untuk didownload!', 'error');
-        return;
-      }
+            try {
+                // Sesuaikan URL '/api/obfuscate' dengan domain Vercel kamu jika di-host terpisah
+                const response = await fetch('/api/obfuscate', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ code: code })
+                });
 
-      let filename = outputFileName.value.trim() || 'script_protected.luac';
-      if (!filename.endsWith('.luac')) filename += '.luac';
+                const data = await response.json();
+                if (data.success) {
+                    protectedResultCode = data.code;
+                    btnDownload.disabled = false;
+                    statusDiv.innerText = "Berhasil! Silakan klik tombol Download.";
+                    statusDiv.style.color = "green";
+                } else {
+                    statusDiv.innerText = "Gagal: " + (data.error || "Terjadi kesalahan");
+                    statusDiv.style.color = "red";
+                }
+            } catch (err) {
+                statusDiv.innerText = "Gagal terhubung ke server Vercel!";
+                statusDiv.style.color = "red";
+            } finally {
+                btnProcess.disabled = false;
+            }
+        });
 
-      const binaryString = atob(currentBase64Data);
-      const bytes = new Uint8Array(binaryString.length);
-      for (let i = 0; i < binaryString.length; i++) {
-        bytes[i] = binaryString.charCodeAt(i);
-      }
+        // Tombol Download File
+        btnDownload.addEventListener('click', () => {
+            if (!protectedResultCode) {
+                alert("[ERROR] Belum ada bytecode/kode untuk didownload!");
+                return;
+            }
 
-      const blob = new Blob([bytes], { type: 'application/octet-stream' });
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement('a');
-      a.href = url;
-      a.download = filename;
-      document.body.appendChild(a);
-      a.click();
-      document.body.removeChild(a);
-      URL.revokeObjectURL(url);
+            let customName = fileNameInput.value.trim();
+            if (!customName) customName = "protected_script";
+            if (!customName.endsWith('.lua')) customName += '.lua';
 
-      showStatus(`[SUCCESS] File biner "${filename}" berhasil diunduh!`, 'success');
-      setTimeout(hideStatus, 3000);
-    });
-  </script>
+            const blob = new Blob([protectedResultCode], { type: 'text/plain' });
+            const link = document.createElement('a');
+            link.href = URL.createObjectURL(blob);
+            link.download = customName;
+            link.click();
+        });
+    </script>
 </body>
 </html>
-
