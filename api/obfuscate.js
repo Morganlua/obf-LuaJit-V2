@@ -9,27 +9,40 @@ function createXorStringExpr(str, key) {
     return `((function() local _t={${bytes.join(',')}} local _s={} for _i=1,#_t do _s[_i]=string.char(bit.bxor(_t[_i],${key})) end return table.concat(_s) end)())`;
 }
 
-// Generator Junk mentah yang diselipkan via string concat agar tidak merusak syntax Lua
-function generateInlineJunk() {
-    const rawJunkPool = [
-        '""..\x00\xFF"\x01@@jshs".."',
-        '("")or"\x00\x00\xFFgamsjehash".."',
-        '""..\x01\x01\x00"\x00".."',
-        '("")and"\xFF\xFF@@".."'
+// Generator Junk & Simbol Acak yang disebar di sela-sela kode
+function generateScatteredJunk() {
+    const junkPool = [
+        '--[[ �����@@���A@�@A�$�FAA�bA����A� ]]--',
+        'local _junk_' + Math.floor(Math.random()*99999) + ' = "\xFF\x00\x00gamsjehash_v2\x01\x02"',
+        '--[[\n  ⚠️ PROTECTED BY MORGAN WEB OBFUSCATOR ⚠️\n]]--',
+        'local _dummy_' + Math.floor(Math.random()*99999) + ' = ""..string.char(103,97,95,106,97,115,104)'
     ];
-    return rawJunkPool[Math.floor(Math.random() * rawJunkPool.length)];
+    return junkPool[Math.floor(Math.random() * junkPool.length)];
 }
 
 function obfuscateSourceCode(srcCode) {
-    const key = Math.floor(Math.random() * 180) + 35;
-    let processed = srcCode;
+    const key = Math.floor(Math.random() * 150) + 40;
+    let code = srcCode;
 
-    // 1. Enkripsi string biasa
-    processed = processed.replace(/(["'])([^"\\]*(?:\\.[^"\\]*)*)\1/g, (match, quote, p1) => {
+    // 1. Rename variabel buatan user agar tersamarkan (kecuali fungsi utama & main)
+    const userFuncs = code.match(/function\s+([a-zA-Z_][a-zA-Z0-9_]*)/g);
+    if (userFuncs) {
+        userFuncs.forEach(fn => {
+            const name = fn.replace('function ', '');
+            if (name !== 'main' && !name.startsWith('SetPlayer')) {
+                const randomAlias = '_0x' + Math.random().toString(36).substring(2, 8);
+                const regex = new RegExp(`\\b${name}\\b`, 'g');
+                code = code.replace(regex, randomAlias);
+            }
+        });
+    }
+
+    // 2. Enkripsi semua string literal dengan XOR
+    code = code.replace(/(["'])([^"\\]*(?:\\.[^"\\]*)*)\1/g, (match, quote, p1) => {
         return createXorStringExpr(p1, key);
     });
 
-    // 2. Enkripsi global API
+    // 3. Enkripsi global API MonetLoader/SAMP
     const globalIdentities = [
         "script_name", "script_author", "script_version", "script_description",
         "sampAddChatMessage", "sampRegisterChatCommand", "isSampAvailable",
@@ -39,23 +52,22 @@ function obfuscateSourceCode(srcCode) {
     for (const name of globalIdentities) {
         const encExpr = createXorStringExpr(name, key);
         const regex = new RegExp(`\\b${name}\\b`, 'g');
-        processed = processed.replace(regex, `_G[${encExpr}]`);
+        code = code.replace(regex, `_G[${encExpr}]`);
     }
 
-    // Sisipkan junk mentah di sela-sela pemanggilan fungsi atau antar baris
-    const lines = processed.split('\n');
-    let finalCode = `--[[ Protected by Morgan Extreme Obfuscator ]]\nlocal bit = require('bit')\n`;
+    // 4. Pecah baris dan selipkan junk simbol acak di sela-selanya
+    const lines = code.split('\n');
+    let finalOutput = `--[[ PROTECTED BY MORGAN WEB OBFUSCATOR ]]\\nlocal bit = require('bit')\n`;
 
     for (let line of lines) {
-        finalCode += line;
-        // Peluang 50% menyisipkan junk mentah di ujung baris atau sela kode
-        if (Math.random() < 0.50 && line.trim().length > 0 && !line.includes('--')) {
-            finalCode += ` --[[ \x00\xFF\x01@@gamsjehash ]] `;
+        finalOutput += line + '\n';
+        // Peluang 45% diselipin junk simbol acak di sela-sela baris
+        if (Math.random() < 0.45 && line.trim().length > 0 && !line.includes('--')) {
+            finalOutput += generateScatteredJunk() + '\n';
         }
-        finalCode += '\n';
     }
 
-    return finalCode;
+    return finalOutput;
 }
 
 export default async function handler(req, res) {
@@ -75,10 +87,10 @@ export default async function handler(req, res) {
         return res.status(200).json({
             success: true,
             code: protectedLuaSource,
-            message: "Berhasil di-obfuscate dengan inline junk!"
+            message: "Berhasil di-obfuscate via GitHub Actions/Vercel!"
         });
 
     } catch (err) {
         return res.status(500).json({ success: false, error: err.message });
     }
-}
+            }
