@@ -26,16 +26,20 @@ export default async function handler(req, res) {
       return res.status(400).json({ success: false, error: "Syntax Error: " + fengari.to_jsstring(err) });
     }
 
-    // 3. Dump bytecode biner murni (100% mirip string.dump lokal)
+    // 3. Dump bytecode biner murni (MENGHINDARI to_jsstring agar bebas dari error UTF-8)
     let binaryChunks = [];
-    lua.lua_dump(L, (L, b, size, ud) => {
-      const chunkBytes = Buffer.from(fengari.to_jsstring(b), 'binary');
-      binaryChunks.push(chunkBytes);
+    lua.lua_dump(L, (L, p, sz, ud) => {
+      const bytes = [];
+      for (let i = 0; i < sz; i++) {
+        bytes.push(p.charCodeAt(i));
+      }
+      binaryChunks.push(Buffer.from(bytes));
       return 0;
     }, null, 1);
 
     lua.lua_close(L);
 
+    // Gabungkan chunk biner dan ubah ke Base64 dengan aman
     const finalBuffer = Buffer.concat(binaryChunks);
     const base64Data = finalBuffer.toString('base64');
     
