@@ -2,7 +2,7 @@ import fengari from 'fengari';
 
 const { lua, lauxlib, lualib } = fengari;
 
-// Fungsi pembantu enkripsi XOR string otomatis
+// Fungsi pembantu enkripsi XOR string
 function createXorExpr(str, key) {
   if (!str || str.length === 0) return '""';
   const bytes = [];
@@ -12,27 +12,19 @@ function createXorExpr(str, key) {
   return `((function() local _t={${bytes.join(',')}} local _s={} for _i=1,#_t do _s[_i]=string.char(bit.bxor(_t[_i],${key})) end return table.concat(_s) end)())`;
 }
 
-// Otomatis samarkan semua string & variabel global sebelum dicompile ke biner
+// Otomatis enkripsi string selain metadata script
 function obfuscateSource(srcCode) {
   const key = Math.floor(Math.random() * 180) + 35;
   let processed = srcCode;
 
-  // 1. Enkripsi semua string di dalam tanda kutip "..." dan '...'
-  processed = processed.replace(/"([^"\\]*(?:\\.[^"\\]*)*)"/g, (_, p1) => createXorExpr(p1, key));
-  processed = processed.replace(/'([^'\\]*(?:\\.[^'\\]*)*)'/g, (_, p1) => createXorExpr(p1, key));
-
-  // 2. Enkripsi fungsi-fungsi global SA-MP / MonetLoader agar nama fungsinya tidak terbaca
-  const globals = [
-    "script_name", "script_author", "script_version", "script_description",
-    "sampAddChatMessage", "sampRegisterChatCommand", "setPlayerNeverGetsTired",
-    "isSampAvailable", "PLAYER_HANDLE", "showCursor", "isPauseMenuActive",
-    "wait", "print", "tostring", "tonumber"
-  ];
-
-  globals.forEach(name => {
-    const encExpr = createXorExpr(name, key);
-    const regex = new RegExp(`\\b${name}\\b`, 'g');
-    processed = processed.replace(regex, `_G[${encExpr}]`);
+  // Pisahkan string yang ada di dalam script_name, script_author, script_version agar tidak dienkripsi
+  // Biar MonetLoader tetap bisa membaca informasi script dengan normal
+  const protectedFuncs = ['script_name', 'script_author', 'script_version', 'script_description'];
+  
+  // Regex untuk mencari string di luar fungsi metadata
+  // Kita ganti string biasa (pesan chat, command, dll) dengan XOR
+  processed = processed.replace(/(?<!script_name\s*\(\s*|script_author\s*\(\s*|script_version\s*\(\s*|script_description\s*\(\s*)(["'])([^"\\]*(?:\\.[^"\\]*)*)\1/g, (match, quote, p1) => {
+    return createXorExpr(p1, key);
   });
 
   return processed;
@@ -50,10 +42,10 @@ export default async function handler(req, res) {
     const { code } = req.body;
     if (!code) return res.status(400).json({ error: 'Kode Lua masih kosong!' });
 
-    // TAHAP 1: Obfuscate String & Globals secara Otomatis
+    // 1. TAHAP OBUTFUSKASI STRING (Kecuali Metadata)
     const protectedLuaSource = obfuscateSource(code);
 
-    // TAHAP 2: Kompilasi Hasil Obfuscate ke Biner LuaJIT (.luac)
+    // 2. TAHAP KOMPILASI BINER LuaJIT (.luac)
     const L = lauxlib.luaL_newstate();
     lualib.luaL_openlibs(L);
 
@@ -87,7 +79,7 @@ export default async function handler(req, res) {
     const finalBuffer = Buffer.concat(binaryChunks);
     const base64Data = finalBuffer.toString('base64');
     
-    const previewText = `[Morganz Full Protected Bytecode]\n-- Size: ${finalBuffer.length} bytes\n-- All Strings & Globals XOR Encrypted!\n\n` + protectedLuaSource.substring(0, 120) + "...";
+    const previewText = `[Morganz MonetLoader Protected]\n-- Size: ${finalBuffer.length} bytes\n-- Metadata safe, Chat/Commands XOR Encrypted!\n\n` + protectedLuaSource.substring(0, 120) + "...";
 
     return res.status(200).json({
       success: true,
