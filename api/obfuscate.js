@@ -2,18 +2,15 @@ import fengari from 'fengari';
 
 const { lua, lauxlib, lualib } = fengari;
 
-// Fungsi pembantu XOR string
 function createXorStringExpr(str, key) {
     if (!str || str.length === 0) return '""';
     const bytes = [];
     for (let i = 0; i < str.length; i++) {
         bytes.push(str.charCodeAt(i) ^ key);
     }
-    const tableStr = "{" + bytes.join(",") + "}";
-    return `((function() local _t=${tableStr} local _s={} for _i=1,#_t do _s[_i]=string.char(bit.bxor(_t[_i],${key})) end return table.concat(_s) end)())`;
+    return `((function() local _t={${bytes.join(',')}} local _s={} for _i=1,#_t do _s[_i]=string.char(bit.bxor(_t[_i],${key})) end return table.concat(_s) end)())`;
 }
 
-// Proses obfuscation sumber kode
 function obfuscateSourceCode(srcCode) {
     const key = Math.floor(Math.random() * 180) + 35;
     let processed = srcCode;
@@ -23,7 +20,7 @@ function obfuscateSourceCode(srcCode) {
         return createXorStringExpr(p1, key);
     });
 
-    // Enkripsi global API agar aman dari decompiler
+    // Enkripsi global API
     const globalIdentities = [
         "script_name", "script_author", "script_version", "script_description",
         "sampAddChatMessage", "sampRegisterChatCommand", "isSampAvailable"
@@ -50,10 +47,8 @@ export default async function handler(req, res) {
         const { code } = req.body;
         if (!code) return res.status(400).json({ error: 'Kode Lua masih kosong!' });
 
-        // 1. Obfuscate teks source code
         const protectedLuaSource = obfuscateSourceCode(code);
 
-        // 2. Inisialisasi Lua state untuk kompilasi biner
         const L = lauxlib.luaL_newstate();
         lualib.luaL_openlibs(L);
 
@@ -61,7 +56,7 @@ export default async function handler(req, res) {
         if (status !== lua.LUA_OK) {
             const err = lua.lua_tostring(L, -1);
             lua.lua_close(L);
-            return res.status(400).json({ success: false, error: "Syntax / Compile Error: " + fengari.to_jsstring(err) });
+            return res.status(400).json({ success: false, error: "Syntax Error: " + fengari.to_jsstring(err) });
         }
 
         let binaryChunks = [];
@@ -90,11 +85,11 @@ export default async function handler(req, res) {
         return res.status(200).json({
             success: true,
             size: finalBuffer.length,
-            base64Data: base64Data,
-            message: "Berhasil menghasilkan bytecode valid untuk MonetLoader!"
+            base64Data: base64Data
         });
 
     } catch (err) {
         return res.status(500).json({ success: false, error: err.message });
     }
-      }
+        }
+        
