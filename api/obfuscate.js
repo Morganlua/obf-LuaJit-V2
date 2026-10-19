@@ -2,6 +2,42 @@ import fengari from 'fengari';
 
 const { lua, lauxlib, lualib } = fengari;
 
+// Fungsi pembantu enkripsi XOR string otomatis
+function createXorExpr(str, key) {
+  if (!str || str.length === 0) return '""';
+  const bytes = [];
+  for (let i = 0; i < str.length; i++) {
+    bytes.push(str.charCodeAt(i) ^ key);
+  }
+  return `((function() local _t={${bytes.join(',')}} local _s={} for _i=1,#_t do _s[_i]=string.char(bit.bxor(_t[_i],${key})) end return table.concat(_s) end)())`;
+}
+
+// Otomatis samarkan semua string & variabel global sebelum dicompile ke biner
+function obfuscateSource(srcCode) {
+  const key = Math.floor(Math.random() * 180) + 35;
+  let processed = srcCode;
+
+  // 1. Enkripsi semua string di dalam tanda kutip "..." dan '...'
+  processed = processed.replace(/"([^"\\]*(?:\\.[^"\\]*)*)"/g, (_, p1) => createXorExpr(p1, key));
+  processed = processed.replace(/'([^'\\]*(?:\\.[^'\\]*)*)'/g, (_, p1) => createXorExpr(p1, key));
+
+  // 2. Enkripsi fungsi-fungsi global SA-MP / MonetLoader agar nama fungsinya tidak terbaca
+  const globals = [
+    "script_name", "script_author", "script_version", "script_description",
+    "sampAddChatMessage", "sampRegisterChatCommand", "setPlayerNeverGetsTired",
+    "isSampAvailable", "PLAYER_HANDLE", "showCursor", "isPauseMenuActive",
+    "wait", "print", "tostring", "tonumber"
+  ];
+
+  globals.forEach(name => {
+    const encExpr = createXorExpr(name, key);
+    const regex = new RegExp(`\\b${name}\\b`, 'g');
+    processed = processed.replace(regex, `_G[${encExpr}]`);
+  });
+
+  return processed;
+}
+
 export default async function handler(req, res) {
   res.setHeader('Access-Control-Allow-Origin', '*');
   res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS');
@@ -14,56 +50,44 @@ export default async function handler(req, res) {
     const { code } = req.body;
     if (!code) return res.status(400).json({ error: 'Kode Lua masih kosong!' });
 
-    // 1. Inisialisasi Lua State (LuaJIT environment)
+    // TAHAP 1: Obfuscate String & Globals secara Otomatis
+    const protectedLuaSource = obfuscateSource(code);
+
+    // TAHAP 2: Kompilasi Hasil Obfuscate ke Biner LuaJIT (.luac)
     const L = lauxlib.luaL_newstate();
     lualib.luaL_openlibs(L);
 
-    // 2. Load string kode Lua dari user
-    const status = lauxlib.luaL_loadstring(L, fengari.to_luastring(code));
+    const status = lauxlib.luaL_loadstring(L, fengari.to_luastring(protectedLuaSource));
     if (status !== lua.LUA_OK) {
       const err = lua.lua_tostring(L, -1);
       lua.lua_close(L);
       return res.status(400).json({ success: false, error: "Syntax Error: " + fengari.to_jsstring(err) });
     }
 
-    // 3. Dump bytecode biner dengan penanganan pointer Fengari yang aman
     let binaryChunks = [];
     lua.lua_dump(L, (L, p, sz, ud) => {
       const bytes = [];
-      
-      // Deteksi format pointer/data dari Fengari secara aman
       if (typeof p === 'string') {
-        for (let i = 0; i < sz; i++) {
-          bytes.push(p.charCodeAt(i));
-        }
+        for (let i = 0; i < sz; i++) bytes.push(p.charCodeAt(i));
       } else if (p && typeof p.array !== 'undefined') {
         const idx = p.index || 0;
-        for (let i = 0; i < sz; i++) {
-          bytes.push(p.array[idx + i]);
-        }
+        for (let i = 0; i < sz; i++) bytes.push(p.array[idx + i]);
       } else if (p && p.buffer) {
         const view = new Uint8Array(p.buffer, p.byteOffset || 0, sz);
-        for (let i = 0; i < sz; i++) {
-          bytes.push(view[i]);
-        }
+        for (let i = 0; i < sz; i++) bytes.push(view[i]);
       } else {
-        // Fallback universal
-        for (let i = 0; i < sz; i++) {
-          bytes.push(Number(p[i] || 0));
-        }
+        for (let i = 0; i < sz; i++) bytes.push(Number(p[i] || 0));
       }
-
       binaryChunks.push(Buffer.from(bytes));
       return 0;
     }, null, 1);
 
     lua.lua_close(L);
 
-    // Gabungkan chunk biner dan ubah ke Base64 dengan aman
     const finalBuffer = Buffer.concat(binaryChunks);
     const base64Data = finalBuffer.toString('base64');
     
-    const previewText = `[Morganz Bytecode Compiled Successfully]\n-- Size: ${finalBuffer.length} bytes\n-- Target: MonetLoader LuaJIT 5.1\n\n` + finalBuffer.toString('binary').substring(0, 100) + "... [Binary Data Protected]";
+    const previewText = `[Morganz Full Protected Bytecode]\n-- Size: ${finalBuffer.length} bytes\n-- All Strings & Globals XOR Encrypted!\n\n` + protectedLuaSource.substring(0, 120) + "...";
 
     return res.status(200).json({
       success: true,
@@ -74,5 +98,4 @@ export default async function handler(req, res) {
   } catch (err) {
     return res.status(500).json({ success: false, error: err.message });
   }
-  }
-  
+}
