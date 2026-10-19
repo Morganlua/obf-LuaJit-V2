@@ -1,7 +1,5 @@
 import fengari from 'fengari';
 
-const { lua, lauxlib, lualib } = fengari;
-
 function createXorStringExpr(str, key) {
     if (!str || str.length === 0) return '""';
     const bytes = [];
@@ -11,19 +9,31 @@ function createXorStringExpr(str, key) {
     return `((function() local _t={${bytes.join(',')}} local _s={} for _i=1,#_t do _s[_i]=string.char(bit.bxor(_t[_i],${key})) end return table.concat(_s) end)())`;
 }
 
+// Generator Junk mentah yang diselipkan via string concat agar tidak merusak syntax Lua
+function generateInlineJunk() {
+    const rawJunkPool = [
+        '""..\x00\xFF"\x01@@jshs".."',
+        '("")or"\x00\x00\xFFgamsjehash".."',
+        '""..\x01\x01\x00"\x00".."',
+        '("")and"\xFF\xFF@@".."'
+    ];
+    return rawJunkPool[Math.floor(Math.random() * rawJunkPool.length)];
+}
+
 function obfuscateSourceCode(srcCode) {
     const key = Math.floor(Math.random() * 180) + 35;
     let processed = srcCode;
 
-    // Enkripsi string biasa
+    // 1. Enkripsi string biasa
     processed = processed.replace(/(["'])([^"\\]*(?:\\.[^"\\]*)*)\1/g, (match, quote, p1) => {
         return createXorStringExpr(p1, key);
     });
 
-    // Enkripsi global API
+    // 2. Enkripsi global API
     const globalIdentities = [
         "script_name", "script_author", "script_version", "script_description",
-        "sampAddChatMessage", "sampRegisterChatCommand", "isSampAvailable"
+        "sampAddChatMessage", "sampRegisterChatCommand", "isSampAvailable",
+        "gg", "ffi", "ev", "requests", "wait", "clear_chat_box"
     ];
     
     for (const name of globalIdentities) {
@@ -32,7 +42,20 @@ function obfuscateSourceCode(srcCode) {
         processed = processed.replace(regex, `_G[${encExpr}]`);
     }
 
-    return processed;
+    // Sisipkan junk mentah di sela-sela pemanggilan fungsi atau antar baris
+    const lines = processed.split('\n');
+    let finalCode = `--[[ Protected by Morgan Extreme Obfuscator ]]\nlocal bit = require('bit')\n`;
+
+    for (let line of lines) {
+        finalCode += line;
+        // Peluang 50% menyisipkan junk mentah di ujung baris atau sela kode
+        if (Math.random() < 0.50 && line.trim().length > 0 && !line.includes('--')) {
+            finalCode += ` --[[ \x00\xFF\x01@@gamsjehash ]] `;
+        }
+        finalCode += '\n';
+    }
+
+    return finalCode;
 }
 
 export default async function handler(req, res) {
@@ -49,47 +72,13 @@ export default async function handler(req, res) {
 
         const protectedLuaSource = obfuscateSourceCode(code);
 
-        const L = lauxlib.luaL_newstate();
-        lualib.luaL_openlibs(L);
-
-        const status = lauxlib.luaL_loadstring(L, fengari.to_luastring(protectedLuaSource));
-        if (status !== lua.LUA_OK) {
-            const err = lua.lua_tostring(L, -1);
-            lua.lua_close(L);
-            return res.status(400).json({ success: false, error: "Syntax Error: " + fengari.to_jsstring(err) });
-        }
-
-        let binaryChunks = [];
-        lua.lua_dump(L, (L, p, sz, ud) => {
-            const bytes = [];
-            if (typeof p === 'string') {
-                for (let i = 0; i < sz; i++) bytes.push(p.charCodeAt(i));
-            } else if (p && typeof p.array !== 'undefined') {
-                const idx = p.index || 0;
-                for (let i = 0; i < sz; i++) bytes.push(p.array[idx + i]);
-            } else if (p && p.buffer) {
-                const view = new Uint8Array(p.buffer, p.byteOffset || 0, sz);
-                for (let i = 0; i < sz; i++) bytes.push(view[i]);
-            } else {
-                for (let i = 0; i < sz; i++) bytes.push(Number(p[i] || 0));
-            }
-            binaryChunks.push(Buffer.from(bytes));
-            return 0;
-        }, null, 1);
-
-        lua.lua_close(L);
-
-        const finalBuffer = Buffer.concat(binaryChunks);
-        const base64Data = finalBuffer.toString('base64');
-
         return res.status(200).json({
             success: true,
-            size: finalBuffer.length,
-            base64Data: base64Data
+            code: protectedLuaSource,
+            message: "Berhasil di-obfuscate dengan inline junk!"
         });
 
     } catch (err) {
         return res.status(500).json({ success: false, error: err.message });
     }
-        }
-        
+}
