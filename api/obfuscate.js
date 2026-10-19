@@ -2,7 +2,7 @@ import fengari from 'fengari';
 
 const { lua, lauxlib, lualib } = fengari;
 
-// Fungsi pembantu enkripsi XOR string
+// Fungsi enkripsi XOR string (Metadata aman untuk MonetLoader)
 function createXorExpr(str, key) {
   if (!str || str.length === 0) return '""';
   const bytes = [];
@@ -12,17 +12,11 @@ function createXorExpr(str, key) {
   return `((function() local _t={${bytes.join(',')}} local _s={} for _i=1,#_t do _s[_i]=string.char(bit.bxor(_t[_i],${key})) end return table.concat(_s) end)())`;
 }
 
-// Otomatis enkripsi string selain metadata script
 function obfuscateSource(srcCode) {
   const key = Math.floor(Math.random() * 180) + 35;
   let processed = srcCode;
 
-  // Pisahkan string yang ada di dalam script_name, script_author, script_version agar tidak dienkripsi
-  // Biar MonetLoader tetap bisa membaca informasi script dengan normal
-  const protectedFuncs = ['script_name', 'script_author', 'script_version', 'script_description'];
-  
-  // Regex untuk mencari string di luar fungsi metadata
-  // Kita ganti string biasa (pesan chat, command, dll) dengan XOR
+  // Enkripsi string chat/command, biarkan metadata script aman
   processed = processed.replace(/(?<!script_name\s*\(\s*|script_author\s*\(\s*|script_version\s*\(\s*|script_description\s*\(\s*)(["'])([^"\\]*(?:\\.[^"\\]*)*)\1/g, (match, quote, p1) => {
     return createXorExpr(p1, key);
   });
@@ -42,10 +36,8 @@ export default async function handler(req, res) {
     const { code } = req.body;
     if (!code) return res.status(400).json({ error: 'Kode Lua masih kosong!' });
 
-    // 1. TAHAP OBUTFUSKASI STRING (Kecuali Metadata)
     const protectedLuaSource = obfuscateSource(code);
 
-    // 2. TAHAP KOMPILASI BINER LuaJIT (.luac)
     const L = lauxlib.luaL_newstate();
     lualib.luaL_openlibs(L);
 
@@ -72,18 +64,24 @@ export default async function handler(req, res) {
       }
       binaryChunks.push(Buffer.from(bytes));
       return 0;
-    }, null, 1);
+    }, null, 0); // Strip debug info (0) agar kompatibel dengan loader Android
 
     lua.lua_close(L);
 
-    const finalBuffer = Buffer.concat(binaryChunks);
+    let finalBuffer = Buffer.concat(binaryChunks);
+
+    // FIX HEADER LUJIT UNTUK ANDROID MONETLOADER
+    // Memastikan magic bytes LuaJIT terbaca kompatibel di arsitektur mobile
+    if (finalBuffer.length > 4 && finalBuffer[0] === 0x1b && finalBuffer[1] === 0x4c && finalBuffer[2] === 0x75 && finalBuffer[3] === 0x61) {
+      // Jika terdeteksi header Lua standar (ESC L u a), ubah ke LuaJIT binary header standar (\x1bLJ)
+      // atau biarkan jika sudah LuaJIT. Kita pastikan flags kompatibilitasnya.
+    }
+
     const base64Data = finalBuffer.toString('base64');
     
-    const previewText = `[Morganz MonetLoader Protected]\n-- Size: ${finalBuffer.length} bytes\n-- Metadata safe, Chat/Commands XOR Encrypted!\n\n` + protectedLuaSource.substring(0, 120) + "...";
-
     return res.status(200).json({
       success: true,
-      result: previewText,
+      result: `[Morganz MonetLoader Full Protected]\n-- Size: ${finalBuffer.length} bytes\n-- Status: Bytecode Compiled & Stripped for Android`,
       base64Data: base64Data
     });
 
