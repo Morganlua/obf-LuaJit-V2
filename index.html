@@ -22,7 +22,7 @@
     body {
       background-color: var(--bg);
       margin: 0;
-      padding: 20px;
+      padding: 15px;
       display: flex;
       justify-content: center;
       align-items: center;
@@ -31,15 +31,15 @@
 
     .container {
       width: 100%;
-      max-width: 650px;
+      max-width: 700px;
       background: var(--card-bg);
       border: 4px solid var(--border);
       box-shadow: 8px 8px 0px var(--border);
-      padding: 25px;
+      padding: 20px;
     }
 
     h1 {
-      font-size: 26px;
+      font-size: 24px;
       text-transform: uppercase;
       background: var(--accent);
       color: white;
@@ -54,10 +54,10 @@
     .dropzone {
       border: 4px dashed var(--border);
       background: #f0f0f0;
-      padding: 30px;
+      padding: 20px;
       text-align: center;
       cursor: pointer;
-      margin-bottom: 20px;
+      margin-bottom: 15px;
       transition: 0.2s;
     }
 
@@ -67,7 +67,7 @@
 
     .dropzone p {
       margin: 0;
-      font-size: 15px;
+      font-size: 14px;
     }
 
     .form-group {
@@ -78,30 +78,37 @@
       display: block;
       margin-bottom: 5px;
       text-transform: uppercase;
-      font-size: 14px;
+      font-size: 13px;
     }
 
-    input[type="text"], select {
+    input[type="text"], select, textarea {
       width: 100%;
-      padding: 12px;
-      font-size: 14px;
+      padding: 10px;
+      font-size: 13px;
       border: 3px solid var(--border);
       box-shadow: 3px 3px 0px var(--border);
       background: #fff;
       outline: none;
     }
 
+    textarea {
+      height: 120px;
+      resize: vertical;
+      white-space: pre;
+      font-family: monospace;
+    }
+
     button {
       width: 100%;
-      padding: 15px;
-      font-size: 18px;
+      padding: 14px;
+      font-size: 16px;
       text-transform: uppercase;
       background: var(--secondary);
       color: white;
       border: 3px solid var(--border);
       box-shadow: 5px 5px 0px var(--border);
       cursor: pointer;
-      margin-top: 10px;
+      margin-top: 5px;
     }
 
     button:active {
@@ -115,7 +122,7 @@
       border: 3px solid var(--border);
       display: none;
       word-break: break-all;
-      font-size: 14px;
+      font-size: 13px;
     }
 
     .status.success {
@@ -127,6 +134,12 @@
       background: var(--accent);
       color: white;
     }
+
+    .btn-copy {
+      background: #00d26a;
+      margin-top: 10px;
+      display: none;
+    }
   </style>
 </head>
 <body>
@@ -136,101 +149,19 @@
 
   <!-- Drag & Drop Zone -->
   <div class="dropzone" id="dropzone">
-    <p id="file-label">📁 SERET & DROP FILE .LUA DI SINI<br><small>(atau klik untuk pilih file)</small></p>
+    <p id="file-label">📁 SERET & DROP FILE .LUA DI SINI<br><small>(atau klik di sini untuk pilih file)</small></p>
     <input type="file" id="file-input" accept=".lua,.luac" style="display: none;">
+  </div>
+
+  <!-- Source Input Text Area -->
+  <div class="form-group">
+    <label for="source-code">ATAU PASTE SOURCE CODE LUA DI SINI:</label>
+    <textarea id="source-code" placeholder="function main()&#10;    sampAddChatMessage('Halo Morgan!', -1)&#10;end"></textarea>
   </div>
 
   <!-- Preset Selector -->
   <div class="form-group">
     <label for="preset">PILIH MODE PROTEKSI:</label>
     <select id="preset">
-      <option value="moonsec">MorganSec Anti-Tamper + Mini-VM</option>
-      <option value="luraph">Base64 Stream Sandbox</option>
-      <option value="ast">Standard XOR Encrypt</option>
-    </select>
-  </div>
-
-  <!-- Custom Rename File -->
-  <div class="form-group">
-    <label for="out-filename">NAMA FILE HASIL DOWNLOAD:</label>
-    <input type="text" id="out-filename" value="protected_script.lua" placeholder="contoh: nametag_pro.lua">
-  </div>
-
-  <!-- Action Button -->
-  <button id="obf-btn">LOCK & OBFUSCATE 🔒</button>
-
-  <!-- Status Info -->
-  <div id="status-box" class="status"></div>
-</div>
-
-<script>
-  const dropzone = document.getElementById('dropzone');
-  const fileInput = document.getElementById('file-input');
-  const fileLabel = document.getElementById('file-label');
-  const obfBtn = document.getElementById('obf-btn');
-  const outFilenameInput = document.getElementById('out-filename');
-  const statusBox = document.getElementById('status-box');
-
-  let loadedCode = "";
-
-  dropzone.addEventListener('click', () => fileInput.click());
-
-  fileInput.addEventListener('change', (e) => {
-    if (e.target.files.length > 0) {
-      handleFile(e.target.files[0]);
-    }
-  });
-
-  dropzone.addEventListener('dragover', (e) => {
-    e.preventDefault();
-    dropzone.classList.add('hover');
-  });
-
-  dropzone.addEventListener('dragleave', () => dropzone.classList.remove('hover'));
-
-  dropzone.addEventListener('drop', (e) => {
-    e.preventDefault();
-    dropzone.classList.remove('hover');
-    if (e.dataTransfer.files.length > 0) {
-      handleFile(e.dataTransfer.files[0]);
-    }
-  });
-
-  function handleFile(file) {
-    if (!file.name.endsWith('.lua') && !file.name.endsWith('.luac')) {
-      showStatus("File harus berformat .lua atau .luac!", "error");
-      return;
-    }
-
-    const reader = new FileReader();
-    reader.onload = (e) => {
-      loadedCode = e.target.result;
-      fileLabel.innerHTML = `✅ FILE TERPILIH:<br><strong>${file.name}</strong>`;
-      
-      const nameParts = file.name.split('.');
-      outFilenameInput.value = `${nameParts[0]}_protected.lua`;
-      showStatus("File berhasil dimuat, siap dikunci!", "success");
-    };
-    reader.readAsText(file);
-  }
-
-  obfBtn.addEventListener('click', async () => {
-    if (!loadedCode) {
-      showStatus("Silakan upload file Lua terlebih dahulu!", "error");
-      return;
-    }
-
-    showStatus("Sedang mengenkripsi & memasang anti-tamper...", "success");
-
-    try {
-      const response = await fetch('/api/obfuscate', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          code: loadedCode,
-          preset: document.getElementById('preset').value
-        })
-      });
-
-      const data = await response
-    
+      <option value="moonsec">MorganSec
+        
