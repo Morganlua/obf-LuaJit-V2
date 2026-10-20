@@ -1,275 +1,236 @@
 <!DOCTYPE html>
 <html lang="id">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>MORGAN LUA OBFUSCATOR</title>
-    <!-- Google Fonts: Space Grotesk biar ala Neo-Brutalism -->
-    <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;700&display=swap" rel="stylesheet">
-    <style>
-        * {
-            box-sizing: border-box;
-            font-family: 'Space Grotesk', sans-serif;
-        }
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>MORGAN LUAC - Neubrutalism Edition</title>
+  <style>
+    :root {
+      --bg: #ffde59;
+      --card-bg: #ffffff;
+      --accent: #ff5757;
+      --secondary: #5271ff;
+      --border: #000000;
+    }
 
-        body {
-            background-color: #FFFDF9;
-            background-image: radial-gradient(#000 1px, transparent 1px);
-            background-size: 20px 20px;
-            margin: 0;
-            padding: 20px;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            min-height: 100vh;
-        }
+    * {
+      box-sizing: border-box;
+      font-family: 'Courier New', Courier, monospace;
+      font-weight: bold;
+    }
 
-        .container {
-            width: 100%;
-            max-width: 600px;
-            background: #FFDE59;
-            border: 4px solid #000;
-            box-shadow: 8px 8px 0px #000;
-            padding: 30px;
-        }
+    body {
+      background-color: var(--bg);
+      margin: 0;
+      padding: 20px;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      min-height: 100vh;
+    }
 
-        h1 {
-            font-size: 28px;
-            font-weight: 700;
-            text-transform: uppercase;
-            margin-top: 0;
-            margin-bottom: 20px;
-            background: #000;
-            color: #FFF;
-            padding: 10px;
-            text-align: center;
-            border: 3px solid #000;
-        }
+    .container {
+      width: 100%;
+      max-width: 650px;
+      background: var(--card-bg);
+      border: 4px solid var(--border);
+      box-shadow: 8px 8px 0px var(--border);
+      padding: 25px;
+    }
 
-        .label {
-            font-weight: 700;
-            margin-bottom: 8px;
-            display: block;
-            text-transform: uppercase;
-            font-size: 14px;
-        }
+    h1 {
+      font-size: 26px;
+      text-transform: uppercase;
+      background: var(--accent);
+      color: white;
+      padding: 12px;
+      border: 3px solid var(--border);
+      box-shadow: 4px 4px 0px var(--border);
+      margin-top: 0;
+      text-align: center;
+      letter-spacing: 1px;
+    }
 
-        /* Drop Zone Area */
-        .drop-zone {
-            background: #FFF;
-            border: 4px dashed #000;
-            padding: 30px;
-            text-align: center;
-            cursor: pointer;
-            margin-bottom: 20px;
-            transition: background 0.1s ease;
-        }
+    .dropzone {
+      border: 4px dashed var(--border);
+      background: #f0f0f0;
+      padding: 30px;
+      text-align: center;
+      cursor: pointer;
+      margin-bottom: 20px;
+      transition: 0.2s;
+    }
 
-        .drop-zone.dragover {
-            background: #FF99C8;
-        }
+    .dropzone.hover {
+      background: #d1e7dd;
+    }
 
-        .drop-zone p {
-            margin: 0;
-            font-weight: 700;
-            font-size: 16px;
-        }
+    .dropzone p {
+      margin: 0;
+      font-size: 15px;
+    }
 
-        /* Input & Textarea Neo-Brutalism Style */
-        input[type="text"], textarea {
-            width: 100%;
-            border: 4px solid #000;
-            padding: 12px;
-            font-weight: 700;
-            font-size: 15px;
-            background: #FFF;
-            box-shadow: 4px 4px 0px #000;
-            margin-bottom: 20px;
-            outline: none;
-        }
+    .form-group {
+      margin-bottom: 15px;
+    }
 
-        textarea {
-            resize: vertical;
-            height: 150px;
-        }
+    label {
+      display: block;
+      margin-bottom: 5px;
+      text-transform: uppercase;
+      font-size: 14px;
+    }
 
-        /* Tombol Aksi */
-        .btn-group {
-            display: flex;
-            gap: 15px;
-        }
+    input[type="text"], select {
+      width: 100%;
+      padding: 12px;
+      font-size: 14px;
+      border: 3px solid var(--border);
+      box-shadow: 3px 3px 0px var(--border);
+      background: #fff;
+      outline: none;
+    }
 
-        button {
-            flex: 1;
-            background: #FF5757;
-            color: #FFF;
-            border: 4px solid #000;
-            padding: 15px;
-            font-weight: 700;
-            font-size: 16px;
-            text-transform: uppercase;
-            cursor: pointer;
-            box-shadow: 4px 4px 0px #000;
-            transition: transform 0.1s, box-shadow 0.1s;
-        }
+    button {
+      width: 100%;
+      padding: 15px;
+      font-size: 18px;
+      text-transform: uppercase;
+      background: var(--secondary);
+      color: white;
+      border: 3px solid var(--border);
+      box-shadow: 5px 5px 0px var(--border);
+      cursor: pointer;
+      margin-top: 10px;
+    }
 
-        button:active {
-            transform: translate(2px, 2px);
-            box-shadow: 2px 2px 0px #000;
-        }
+    button:active {
+      transform: translate(2px, 2px);
+      box-shadow: 3px 3px 0px var(--border);
+    }
 
-        button.btn-blue {
-            background: #4361EE;
-        }
+    .status {
+      margin-top: 15px;
+      padding: 10px;
+      border: 3px solid var(--border);
+      display: none;
+      word-break: break-all;
+      font-size: 14px;
+    }
 
-        button:disabled {
-            background: #ccc;
-            border-color: #666;
-            color: #666;
-            cursor: not-allowed;
-            box-shadow: none;
-            transform: none;
-        }
+    .status.success {
+      background: #73d13d;
+      color: black;
+    }
 
-        #status {
-            margin-top: 15px;
-            font-weight: 700;
-            text-align: center;
-            font-size: 14px;
-        }
-    </style>
+    .status.error {
+      background: var(--accent);
+      color: white;
+    }
+  </style>
 </head>
 <body>
 
-    <div class="container">
-        <h1>Morgan Obfuscator</h1>
+<div class="container">
+  <h1>MORGAN LUAC ⚡</h1>
 
-        <!-- Drop Zone File -->
-        <span class="label">Upload File .lua (Drag & Drop atau Klik)</span>
-        <div id="dropZone" class="drop-zone">
-            <p>📁 Seret file .lua ke sini atau klik untuk pilih file</p>
-            <input type="file" id="fileInput" accept=".lua" style="display: none;">
-        </div>
+  <!-- Drag & Drop Zone -->
+  <div class="dropzone" id="dropzone">
+    <p id="file-label">📁 SERET & DROP FILE .LUA DI SINI<br><small>(atau klik untuk pilih file)</small></p>
+    <input type="file" id="file-input" accept=".lua,.luac" style="display: none;">
+  </div>
 
-        <span class="label">Atau Ketik / Paste Kode Lua</span>
-        <textarea id="codeSource" placeholder="Paste kode Lua kamu di sini..."></textarea>
+  <!-- Preset Selector -->
+  <div class="form-group">
+    <label for="preset">PILIH MODE PROTEKSI:</label>
+    <select id="preset">
+      <option value="moonsec">MorganSec Anti-Tamper + Mini-VM</option>
+      <option value="luraph">Base64 Stream Sandbox</option>
+      <option value="ast">Standard XOR Encrypt</option>
+    </select>
+  </div>
 
-        <span class="label">Nama File Hasil Download</span>
-        <input type="text" id="fileNameInput" value="protected_script" placeholder="Contoh: my_script">
+  <!-- Custom Rename File -->
+  <div class="form-group">
+    <label for="out-filename">NAMA FILE HASIL DOWNLOAD:</label>
+    <input type="text" id="out-filename" value="protected_script.lua" placeholder="contoh: nametag_pro.lua">
+  </div>
 
-        <div class="btn-group">
-            <button id="btnProcess">Proses</button>
-            <button id="btnDownload" class="btn-blue" disabled>Download</button>
-        </div>
+  <!-- Action Button -->
+  <button id="obf-btn">LOCK & OBFUSCATE 🔒</button>
 
-        <div id="status"></div>
-    </div>
+  <!-- Status Info -->
+  <div id="status-box" class="status"></div>
+</div>
 
-    <script>
-        const dropZone = document.getElementById('dropZone');
-        const fileInput = document.getElementById('fileInput');
-        const codeSource = document.getElementById('codeSource');
-        const fileNameInput = document.getElementById('fileNameInput');
-        const btnProcess = document.getElementById('btnProcess');
-        const btnDownload = document.getElementById('btnDownload');
-        const statusDiv = document.getElementById('status');
+<script>
+  const dropzone = document.getElementById('dropzone');
+  const fileInput = document.getElementById('file-input');
+  const fileLabel = document.getElementById('file-label');
+  const obfBtn = document.getElementById('obf-btn');
+  const outFilenameInput = document.getElementById('out-filename');
+  const statusBox = document.getElementById('status-box');
 
-        let protectedResultCode = "";
+  let loadedCode = "";
 
-        // Event Klik Dropzone buat pilih file
-        dropZone.addEventListener('click', () => fileInput.click());
+  dropzone.addEventListener('click', () => fileInput.click());
 
-        fileInput.addEventListener('change', (e) => {
-            const file = e.target.files[0];
-            if (file) handleFile(file);
-        });
+  fileInput.addEventListener('change', (e) => {
+    if (e.target.files.length > 0) {
+      handleFile(e.target.files[0]);
+    }
+  });
 
-        // Drag and Drop Events
-        dropZone.addEventListener('dragover', (e) => {
-            e.preventDefault();
-            dropZone.classList.add('dragover');
-        });
+  dropzone.addEventListener('dragover', (e) => {
+    e.preventDefault();
+    dropzone.classList.add('hover');
+  });
 
-        dropZone.addEventListener('dragleave', () => {
-            dropZone.classList.remove('dragover');
-        });
+  dropzone.addEventListener('dragleave', () => dropzone.classList.remove('hover'));
 
-        dropZone.addEventListener('drop', (e) => {
-            e.preventDefault();
-            dropZone.classList.remove('dragover');
-            const file = e.dataTransfer.files[0];
-            if (file) handleFile(file);
-        });
+  dropzone.addEventListener('drop', (e) => {
+    e.preventDefault();
+    dropzone.classList.remove('hover');
+    if (e.dataTransfer.files.length > 0) {
+      handleFile(e.dataTransfer.files[0]);
+    }
+  });
 
-        function handleFile(file) {
-            // Ambil nama file asli (tanpa ekstensi .lua) untuk otomatis isi nama file output
-            const originalName = file.name.replace(/\.[^/.]+$/, "");
-            fileNameInput.value = originalName + "_protected";
+  function handleFile(file) {
+    if (!file.name.endsWith('.lua') && !file.name.endsWith('.luac')) {
+      showStatus("File harus berformat .lua atau .luac!", "error");
+      return;
+    }
 
-            const reader = new FileReader();
-            reader.onload = (e) => {
-                codeSource.value = e.target.result;
-                statusDiv.innerText = "File " + file.name + " berhasil dimuat!";
-                statusDiv.style.color = "green";
-            };
-            reader.readAsText(file);
-        }
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      loadedCode = e.target.result;
+      fileLabel.innerHTML = `✅ FILE TERPILIH:<br><strong>${file.name}</strong>`;
+      
+      const nameParts = file.name.split('.');
+      outFilenameInput.value = `${nameParts[0]}_protected.lua`;
+      showStatus("File berhasil dimuat, siap dikunci!", "success");
+    };
+    reader.readAsText(file);
+  }
 
-        // Tombol Proses Obfuscate ke Vercel API
-        btnProcess.addEventListener('click', async () => {
-            const code = codeSource.value.trim();
-            if (!code) {
-                alert("Kode Lua masih kosong!");
-                return;
-            }
+  obfBtn.addEventListener('click', async () => {
+    if (!loadedCode) {
+      showStatus("Silakan upload file Lua terlebih dahulu!", "error");
+      return;
+    }
 
-            btnProcess.disabled = true;
-            statusDiv.innerText = "Sedang meng-obfuscate kode...";
-            statusDiv.style.color = "#000";
+    showStatus("Sedang mengenkripsi & memasang anti-tamper...", "success");
 
-            try {
-                // Sesuaikan URL '/api/obfuscate' dengan domain Vercel kamu jika di-host terpisah
-                const response = await fetch('/api/obfuscate', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ code: code })
-                });
+    try {
+      const response = await fetch('/api/obfuscate', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          code: loadedCode,
+          preset: document.getElementById('preset').value
+        })
+      });
 
-                const data = await response.json();
-                if (data.success) {
-                    protectedResultCode = data.code;
-                    btnDownload.disabled = false;
-                    statusDiv.innerText = "Berhasil! Silakan klik tombol Download.";
-                    statusDiv.style.color = "green";
-                } else {
-                    statusDiv.innerText = "Gagal: " + (data.error || "Terjadi kesalahan");
-                    statusDiv.style.color = "red";
-                }
-            } catch (err) {
-                statusDiv.innerText = "Gagal terhubung ke server Vercel!";
-                statusDiv.style.color = "red";
-            } finally {
-                btnProcess.disabled = false;
-            }
-        });
-
-        // Tombol Download File
-        btnDownload.addEventListener('click', () => {
-            if (!protectedResultCode) {
-                alert("[ERROR] Belum ada bytecode/kode untuk didownload!");
-                return;
-            }
-
-            let customName = fileNameInput.value.trim();
-            if (!customName) customName = "protected_script";
-            if (!customName.endsWith('.lua')) customName += '.lua';
-
-            const blob = new Blob([protectedResultCode], { type: 'text/plain' });
-            const link = document.createElement('a');
-            link.href = URL.createObjectURL(blob);
-            link.download = customName;
-            link.click();
-        });
-    </script>
-</body>
-</html>
+      const data = await response
+    
