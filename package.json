@@ -1,9 +1,0 @@
-{
-  "name": "luajit-obfuscator-safe",
-  "version": "1.0.0",
-  "main": "api/obfuscate.js",
-  "dependencies": {
-    "cors": "^2.8.5",
-    "fengari": "^0.1.4"
-  }
-}
