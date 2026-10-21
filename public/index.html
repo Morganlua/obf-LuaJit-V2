@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Morganz Obfuscator Ultimate v6.2</title>
+    <style>
+        body { background-color: #121212; color: #e0e0e0; font-family: monospace; margin: 0; padding: 20px; display: flex; justify-content: center; }
+        .container { width: 100%; max-width: 750px; background: #1e1e1e; padding: 25px; border-radius: 8px; box-shadow: 0 4px 15px rgba(0,0,0,0.5); }
+        h2 { color: #00ffcc; margin-top: 0; font-size: 20px; }
+        label { display: block; margin-bottom: 8px; color: #ccc; font-size: 13px; }
+        textarea { width: 100%; height: 220px; background: #111; color: #00ffcc; border: 1px solid #333; padding: 12px; box-sizing: border-box; font-family: monospace; font-size: 13px; border-radius: 4px; resize: vertical; }
+        .btn-process { width: 100%; background: #00ffcc; color: #000; border: none; padding: 14px; font-weight: bold; cursor: pointer; border-radius: 4px; margin-top: 15px; font-size: 14px; }
+        .btn-process:hover { background: #00ccb3; }
+        .log-box { height: 75px; background: #0a0a0a; color: #aaa; margin-top: 8px; }
+        .download-wrapper { margin-top: 20px; border-top: 1px solid #333; padding-top: 15px; }
+        .filename-group { display: flex; align-items: center; gap: 10px; margin-bottom: 15px; }
+        .filename-group input { flex: 1; background: #111; border: 1px solid #333; color: #fff; padding: 10px; border-radius: 4px; font-family: monospace; }
+        .btn-download { width: 100%; padding: 14px; font-weight: bold; border: none; border-radius: 4px; font-size: 14px; }
+        .btn-download.locked { background: #521c1c; color: #ff9999; cursor: not-allowed; }
+        .btn-download.unlocked { background: #28a745; color: #fff; cursor: pointer; }
+        .btn-download.unlocked:hover { background: #218838; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h2>⚡ Morganz Obfuscator [Ultimate v6.2 Web]</h2>
+        <label>Editor / Paste Source Code Lua:</label>
+        <textarea id="srcInput" placeholder="-- Paste source code script Lua kamu di sini..."></textarea>
+
+        <button id="btnProcess" class="btn-process">⚡ PROSES OBFUSCATE (PIPELINE BERTAHAP)</button>
+
+        <div style="margin-top: 15px;">
+            <label>Status & Log Tahapan:</label>
+            <textarea id="logOutput" class="log-box" readonly>Status: Siap. Ketik atau paste kode lalu klik tombol Proses.</textarea>
+        </div>
+
+        <div class="download-wrapper">
+            <label>Nama File Output (.lua):</label>
+            <div class="filename-group">
+                <input type="text" id="fileNameInput" value="script_protected_v62">
+                <span>.lua</span>
+            </div>
+            <button id="btnDownload" class="btn-download locked" disabled>🔒 DOWNLOAD DIKUNCI (HARAP KLIK PROSES OBFUSCATE DULU!)</button>
+        </div>
+    </div>
+
+    <script>
+        let finalProtectedCode = "";
+
+        document.getElementById('btnProcess').addEventListener('click', async () => {
+            const code = document.getElementById('srcInput').value;
+            const logBox = document.getElementById('logOutput');
+            const btnDownload = document.getElementById('btnDownload');
+
+            if (!code.trim()) {
+                logBox.value = "[ERROR] Source code masih kosong!";
+                return;
+            }
+
+            logBox.value = "Memproses enkripsi XOR...";
+
+            try {
+                const res = await fetch('/api/obfuscate', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ sourceCode: code })
+                });
+
+                const data = await res.json();
+                if (data.success) {
+                    logBox.value = data.log;
+                    finalProtectedCode = data.protectedCode;
+
+                    btnDownload.disabled = false;
+                    btnDownload.classList.remove('locked');
+                    btnDownload.classList.add('unlocked');
+                    btnDownload.innerText = "📥 DOWNLOAD FILE .LUA SEKARANG";
+                } else {
+                    logBox.value = "[ERROR] " + data.error;
+                }
+            } catch (err) {
+                logBox.value = "[ERROR] Gagal menghubungi server: " + err.message;
+            }
+        });
+
+        document.getElementById('btnDownload').addEventListener('click', () => {
+            if (!finalProtectedCode) return;
+            let customName = document.getElementById('fileNameInput').value.trim();
+            if (!customName) customName = "script_protected_v62";
+            customName = customName.replace(/\.lua$/, "");
+
+            const blob = new Blob([finalProtectedCode], { type: 'text/plain;charset=utf-8' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = customName + ".lua";
+            a.click();
+            URL.revokeObjectURL(url);
+        });
+    </script>
+</body>
+</html>
