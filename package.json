@@ -1,0 +1,7 @@
+{
+  "name": "morganz-obfuscator-web",
+  "version": "6.2.0",
+  "description": "Morganz Obfuscator Ultimate v6.2 Web Version - Vercel Ready",
+  "main": "api/obfuscate.js",
+  "dependencies": {}
+}
