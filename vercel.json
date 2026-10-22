@@ -1,8 +1,7 @@
 {
   "rewrites": [
-    { "source": "/api/domains", "destination": "/api/domains.js" },
-    { "source": "/api/inbox", "destination": "/api/inbox.js" },
-    { "source": "/api/message", "destination": "/api/message.js" },
+    { "source": "/api/generate-am", "destination": "/api/generate-am.js" },
+    { "source": "/api/verify-ikri", "destination": "/api/verify-ikri.js" },
     { "source": "/(.*)", "destination": "/public/index.html" }
   ]
 }
