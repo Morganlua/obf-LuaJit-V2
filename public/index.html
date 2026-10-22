@@ -33,13 +33,16 @@
       <p class="text-xs text-slate-500 font-medium">Auto Generate & Verifikasi Manual Akun Premium Alight Motion</p>
     </div>
 
-    <!-- Pilihan Tab Atas (Persis Foto) -->
+    <!-- Pilihan Tab Atas: Auto Generate | Verifikasi Ikri | Email Pribadi -->
     <div class="bg-white p-1.5 rounded-2xl border border-slate-200 shadow-sm flex gap-1">
-      <button onclick="switchTab('auto')" id="tabAuto" class="flex-1 py-3 px-4 rounded-xl bg-blue-600 text-white font-bold text-xs flex items-center justify-center gap-2 shadow-sm transition">
+      <button onclick="switchTab('auto')" id="tabAuto" class="flex-1 py-3 px-2 rounded-xl bg-blue-600 text-white font-bold text-[11px] flex items-center justify-center gap-1.5 shadow-sm transition">
         <i class="fa-solid fa-wand-magic-sparkles"></i> Auto Generate
       </button>
-      <button onclick="switchTab('manual')" id="tabManual" class="flex-1 py-3 px-4 rounded-xl text-slate-600 font-bold text-xs flex items-center justify-center gap-2 hover:bg-slate-50 transition">
-        <i class="fa-solid fa-link"></i> Verifikasi Ikri / Link
+      <button onclick="switchTab('manual')" id="tabManual" class="flex-1 py-3 px-2 rounded-xl text-slate-600 font-bold text-[11px] flex items-center justify-center gap-1.5 hover:bg-slate-50 transition">
+        <i class="fa-solid fa-link"></i> Verifikasi Ikri
+      </button>
+      <button onclick="switchTab('custom')" id="tabCustom" class="flex-1 py-3 px-2 rounded-xl text-slate-600 font-bold text-[11px] flex items-center justify-center gap-1.5 hover:bg-slate-50 transition">
+        <i class="fa-solid fa-envelope"></i> Email Pribadi
       </button>
     </div>
 
@@ -87,7 +90,7 @@
       </div>
     </div>
 
-    <!-- KONTEN TAB 2: VERIFIKASI MANUAL IKRI / LINK (YANG DIINGINKAN) -->
+    <!-- KONTEN TAB 2: VERIFIKASI IKRI / LINK -->
     <div id="contentManual" class="hidden bg-white rounded-2xl p-5 border border-slate-200 shadow-sm space-y-4">
       <div>
         <h2 class="font-bold text-sm text-slate-900">Verifikasi Manual Link (Ikri Tools)</h2>
@@ -109,6 +112,28 @@
       </button>
 
       <div id="verifyResult" class="hidden p-3 rounded-xl text-xs font-bold border"></div>
+    </div>
+
+    <!-- KONTEN TAB 3: EMAIL PRIBADI / GMAIL (TAMBAHAN BARU) -->
+    <div id="contentCustom" class="hidden bg-white rounded-2xl p-5 border border-slate-200 shadow-sm space-y-4">
+      <div>
+        <h2 class="font-bold text-sm text-slate-900">Kirim Link ke Email Pribadi</h2>
+        <p class="text-[11px] text-slate-400">Kirim Magic Link pendaftaran langsung ke Gmail pribadi kamu</p>
+      </div>
+
+      <div class="space-y-1.5">
+        <label class="text-xs font-bold text-slate-700 block">Masukkan Gmail / Email Pribadi</label>
+        <div class="flex gap-2">
+          <input type="email" id="privateEmailInput" placeholder="nama@gmail.com" class="flex-1 bg-slate-50 border border-slate-200 rounded-xl p-3 text-xs font-mono focus:outline-none focus:border-blue-500">
+          <button onclick="sendPrivateEmailLink()" class="bg-blue-600 text-white font-bold px-4 py-3 rounded-xl text-xs hover:bg-blue-700 transition">
+            Kirim Link
+          </button>
+        </div>
+      </div>
+
+      <div id="privateSentNotice" class="hidden bg-blue-50 text-blue-700 p-3 rounded-xl border border-blue-200 text-xs font-medium">
+        <i class="fa-solid fa-circle-info"></i> Link berhasil dikirim ke email kamu! Silakan login di aplikasi AM dengan email tersebut, lalu salin link dari Gmail kamu dan verifikasi di tab "Verifikasi Ikri".
+      </div>
     </div>
 
     <!-- RIWAYAT AKUN GENERATED -->
@@ -162,19 +187,29 @@
       if (pollInterval) clearInterval(pollInterval);
       const btnAuto = document.getElementById('tabAuto');
       const btnManual = document.getElementById('tabManual');
+      const btnCustom = document.getElementById('tabCustom');
       const contentAuto = document.getElementById('contentAuto');
       const contentManual = document.getElementById('contentManual');
+      const contentCustom = document.getElementById('contentCustom');
+
+      // Reset all buttons
+      btnAuto.className = "flex-1 py-3 px-2 rounded-xl text-slate-600 font-bold text-[11px] flex items-center justify-center gap-1.5 hover:bg-slate-50 transition";
+      btnManual.className = "flex-1 py-3 px-2 rounded-xl text-slate-600 font-bold text-[11px] flex items-center justify-center gap-1.5 hover:bg-slate-50 transition";
+      btnCustom.className = "flex-1 py-3 px-2 rounded-xl text-slate-600 font-bold text-[11px] flex items-center justify-center gap-1.5 hover:bg-slate-50 transition";
+
+      contentAuto.classList.add('hidden');
+      contentManual.classList.add('hidden');
+      contentCustom.classList.add('hidden');
 
       if (mode === 'auto') {
-        btnAuto.className = "flex-1 py-3 px-4 rounded-xl bg-blue-600 text-white font-bold text-xs flex items-center justify-center gap-2 shadow-sm transition";
-        btnManual.className = "flex-1 py-3 px-4 rounded-xl text-slate-600 font-bold text-xs flex items-center justify-center gap-2 hover:bg-slate-50 transition";
+        btnAuto.className = "flex-1 py-3 px-2 rounded-xl bg-blue-600 text-white font-bold text-[11px] flex items-center justify-center gap-1.5 shadow-sm transition";
         contentAuto.classList.remove('hidden');
-        contentManual.classList.add('hidden');
-      } else {
-        btnManual.className = "flex-1 py-3 px-4 rounded-xl bg-blue-600 text-white font-bold text-xs flex items-center justify-center gap-2 shadow-sm transition";
-        btnAuto.className = "flex-1 py-3 px-4 rounded-xl text-slate-600 font-bold text-xs flex items-center justify-center gap-2 hover:bg-slate-50 transition";
+      } else if (mode === 'manual') {
+        btnManual.className = "flex-1 py-3 px-2 rounded-xl bg-blue-600 text-white font-bold text-[11px] flex items-center justify-center gap-1.5 shadow-sm transition";
         contentManual.classList.remove('hidden');
-        contentAuto.classList.add('hidden');
+      } else if (mode === 'custom') {
+        btnCustom.className = "flex-1 py-3 px-2 rounded-xl bg-blue-600 text-white font-bold text-[11px] flex items-center justify-center gap-1.5 shadow-sm transition";
+        contentCustom.classList.remove('hidden');
       }
     }
 
@@ -239,6 +274,31 @@
           updateHistoryItemStatus(email, json.magicLink);
         }
       } catch (e) {}
+    }
+
+    async function sendPrivateEmailLink() {
+      const email = document.getElementById('privateEmailInput').value.trim();
+      if (!email || !email.includes('@')) {
+        alert('Masukkan email pribadi yang valid!');
+        return;
+      }
+      try {
+        const res = await fetch('/api/send-custom-am', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ email })
+        });
+        const json = await res.json();
+        if (json.status) {
+          document.getElementById('privateSentNotice').classList.remove('hidden');
+          // Auto fill email to manual verification input for convenience
+          document.getElementById('customEmailInput').value = email;
+        } else {
+          alert('Gagal: ' + json.message);
+        }
+      } catch (e) {
+        alert('Gagal terhubung ke server');
+      }
     }
 
     function saveToHistory(email, cookie) {
@@ -327,7 +387,7 @@
         resultBox.classList.remove('hidden');
         if (json.status || json.membershipStatus) {
           resultBox.className = "p-3 rounded-xl text-xs font-bold border bg-emerald-50 text-emerald-700 border-emerald-200";
-          resultBox.innerHTML = `<i class="fa-solid fa-circle-check"></i> Status: ${json.membershipStatus || 'AKUN AKTIF PREMIUM'}`;
+          res.innerHTML = `<i class="fa-solid fa-circle-check"></i> Status: ${json.membershipStatus || 'AKUN AKTIF PREMIUM'}`;
         } else {
           resultBox.className = "p-3 rounded-xl text-xs font-bold border bg-red-50 text-red-700 border-red-200";
           resultBox.innerHTML = `<i class="fa-solid fa-circle-xmark"></i> ${json.message || 'Gagal memverifikasi link'}`;
