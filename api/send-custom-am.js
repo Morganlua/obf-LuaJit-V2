@@ -34,13 +34,13 @@ module.exports = async (req, res) => {
     return res.status(200).json({
       status: true,
       email: email,
-      message: 'Magic Link berhasil dikirim ke email kamu!'
+      message: 'Link verifikasi berhasil dikirim ke Gmail kamu!'
     });
 
   } catch (err) {
     return res.status(500).json({
       status: false,
-      message: err.message || 'Gagal mengirim link ke email'
+      message: err.message || 'Gagal mengirim link ke Gmail'
     });
   }
 };
