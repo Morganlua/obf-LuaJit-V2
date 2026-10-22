@@ -72,7 +72,7 @@ module.exports = async (req, res) => {
       magicLink: cleanMagicLink,
       membershipStatus: verifyData.membershipStatus || 'PREMIUM_ACTIVE',
       planName: verifyData.planName || 'Alight Motion Pro',
-      message: 'Email Login Diterima & Otomatis Diverifikasi!'
+      message: 'Email Login Diterima & Diverifikasi!'
     });
 
   } catch (err) {

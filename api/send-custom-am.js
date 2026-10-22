@@ -17,7 +17,7 @@ module.exports = async (req, res) => {
 
   const email = body?.email || '';
   if (!email || !email.includes('@')) {
-    return res.status(400).json({ status: false, message: 'Format email pribadi tidak valid' });
+    return res.status(400).json({ status: false, message: 'Format email tidak valid' });
   }
 
   try {
@@ -34,13 +34,13 @@ module.exports = async (req, res) => {
     return res.status(200).json({
       status: true,
       email: email,
-      message: 'Magic Link berhasil dikirim ke email pribadi kamu. Silakan periksa aplikasi Gmail/Inbox kamu!'
+      message: 'Magic Link berhasil dikirim ke email kamu!'
     });
 
   } catch (err) {
     return res.status(500).json({
       status: false,
-      message: err.message || 'Gagal mengirim Magic Link ke email pribadi'
+      message: err.message || 'Gagal mengirim link ke email'
     });
   }
 };
