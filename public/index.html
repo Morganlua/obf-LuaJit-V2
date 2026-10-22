@@ -37,7 +37,7 @@
     <div class="bg-white rounded-2xl p-4 border border-slate-200 shadow-sm space-y-4">
       
       <!-- Category Chips / Pilihan Domain -->
-      <div class="flex gap-2 overflow-x-auto pb-1 text-xs no-scrollbar">
+      <div class="flex gap-2 overflow-x-auto pb-1 text-xs">
         <button onclick="changeProvider('gmail.com', this)" class="provider-btn px-4 py-2 rounded-xl border border-blue-200 bg-blue-50 text-blue-600 font-bold shadow-sm transition">Gmail</button>
         <button onclick="changeProvider('outlook.com', this)" class="provider-btn px-4 py-2 rounded-xl border border-slate-200 text-slate-600 hover:bg-slate-50 transition">Outlook</button>
         <button onclick="changeProvider('hotmail.com', this)" class="provider-btn px-4 py-2 rounded-xl border border-slate-200 text-slate-600 hover:bg-slate-50 transition">Hotmail</button>
@@ -57,7 +57,7 @@
           <i class="fa-regular fa-copy"></i> Salin
         </button>
         <button onclick="generateNewEmail()" class="bg-slate-100 text-slate-700 font-medium py-2.5 px-4 rounded-xl flex items-center justify-center gap-1.5 hover:bg-slate-200 transition active:scale-[0.98]">
-          <i class="fa-solid fa-arrow-rotate-right"></i> Ganti
+          <i class="fa-solid fa-plus"></i> Buat Baru
         </button>
         <button onclick="refreshInbox()" class="bg-slate-100 text-slate-700 p-2.5 rounded-xl hover:bg-slate-200 transition active:scale-[0.98]" title="Refresh Inbox">
           <i class="fa-solid fa-arrows-rotate" id="refreshIcon"></i>
@@ -67,13 +67,26 @@
       <!-- Status Bar -->
       <div class="flex justify-between items-center text-xs text-slate-500 pt-1">
         <div class="flex items-center gap-1">
-          <i class="fa-regular fa-clock"></i> Hapus dalam: <span id="timer" class="font-semibold text-slate-700">23j 59m</span>
+          <i class="fa-regular fa-clock"></i> Status: <span id="timer" class="font-semibold text-blue-600">Terhubung</span>
         </div>
         <div class="flex items-center gap-1.5 bg-emerald-50 text-emerald-600 px-2.5 py-1 rounded-full border border-emerald-100 font-medium">
-          <span class="w-1.5 h-1.5 bg-emerald-500 rounded-full animate-pulse"></span> Auto-refresh (10s)
+          <span class="w-1.5 h-1.5 bg-emerald-500 rounded-full animate-pulse"></span> Auto-sync (5s)
         </div>
       </div>
 
+    </div>
+
+    <!-- Riwayat Email Aktif (Mail History Selector) -->
+    <div class="bg-white rounded-2xl p-4 border border-slate-200 shadow-sm space-y-3">
+      <div class="flex items-center justify-between">
+        <span class="font-bold text-xs text-slate-900 flex items-center gap-1.5">
+          <i class="fa-solid fa-clock-rotate-left text-blue-600"></i> Riwayat Email Kamu
+        </span>
+        <button onclick="clearHistory()" class="text-[11px] text-red-500 hover:underline">Hapus Semua</button>
+      </div>
+      <div id="historyList" class="flex gap-2 overflow-x-auto pb-1 text-xs">
+        <!-- List riwayat akan di-render di sini -->
+      </div>
     </div>
 
     <!-- Kotak Masuk Card -->
@@ -92,32 +105,7 @@
             <i class="fa-regular fa-envelope text-xl"></i>
           </div>
           <p class="font-semibold text-slate-800 text-sm">Kotak masuk masih kosong</p>
-          <p class="text-xs text-slate-400 mt-1 max-w-xs mx-auto">Pesan baru akan otomatis muncul di sini. Coba kirim pesan ke email di atas.</p>
-        </div>
-      </div>
-    </div>
-
-    <!-- Features Badges -->
-    <div class="space-y-2 text-xs">
-      <div class="bg-white p-3 rounded-xl border border-slate-200 flex items-center gap-3">
-        <div class="text-blue-600 text-base"><i class="fa-shield-halved"></i></div>
-        <div>
-          <div class="font-bold text-slate-900">Backend Terisolasi</div>
-          <div class="text-slate-500">Privat & tanpa intipan pihak ketiga (Vercel Serverless Proxy)</div>
-        </div>
-      </div>
-      <div class="bg-white p-3 rounded-xl border border-slate-200 flex items-center gap-3">
-        <div class="text-amber-500 text-base"><i class="fa-regular fa-clock"></i></div>
-        <div>
-          <div class="font-bold text-slate-900">Auto-Hapus 24 Jam</div>
-          <div class="text-slate-500">Dibersihkan otomatis dari server secara berkala</div>
-        </div>
-      </div>
-      <div class="bg-white p-3 rounded-xl border border-slate-200 flex items-center gap-3">
-        <div class="text-blue-500 text-base"><i class="fa-circle-check"></i></div>
-        <div>
-          <div class="font-bold text-slate-900">Deteksi OTP & Link</div>
-          <div class="text-slate-500">Ekstraksi instan verifikasi akun dan link pendaftaran</div>
+          <p class="text-xs text-slate-400 mt-1 max-w-xs mx-auto">Menunggu email verifikasi Discord atau pesan baru...</p>
         </div>
       </div>
     </div>
@@ -129,15 +117,30 @@
     let currentDomain = '';
     let activeProviderType = 'gmail.com';
     let domainsList = ['1secmail.com', '1secmail.org', '1secmail.net'];
+    let emailHistory = [];
 
     async function init() {
+      // Load history dari LocalStorage
+      const savedHistory = localStorage.getItem('tmpmail_history');
+      if (savedHistory) {
+        try { emailHistory = JSON.parse(savedHistory); } catch(e) {}
+      }
+
       try {
         const res = await fetch('/api/domains');
         const data = await res.json();
         if (Array.isArray(data) && data.length) domainsList = data;
       } catch(e) {}
-      generateNewEmail();
-      setInterval(checkInbox, 10000);
+
+      if (emailHistory.length > 0) {
+        // Gunakan email terakhir yang pernah dibuat
+        selectEmailFromHistory(0);
+      } else {
+        generateNewEmail();
+      }
+
+      // Sync kotak masuk setiap 5 detik
+      setInterval(checkInbox, 5000);
     }
 
     function changeProvider(type, btnElement) {
@@ -152,26 +155,80 @@
 
     function generateNewEmail() {
       const randomStr = Math.random().toString(36).substring(2, 10);
+      let login = '', domain = '';
       
       if (activeProviderType === 'gmail.com') {
-        currentLogin = 'temp.' + randomStr;
-        currentDomain = 'gmail.com';
+        login = 'temp.' + randomStr;
+        domain = '1secmail.com'; // Menggunakan domain 1secmail aktif untuk menerima email publik
       } else if (activeProviderType === 'outlook.com') {
-        currentLogin = 'user.' + randomStr;
-        currentDomain = 'outlook.com';
+        login = 'user.' + randomStr;
+        domain = '1secmail.org';
       } else if (activeProviderType === 'hotmail.com') {
-        currentLogin = 'mail.' + randomStr;
-        currentDomain = 'hotmail.com';
+        login = 'mail.' + randomStr;
+        domain = '1secmail.net';
       } else if (activeProviderType === 'edu.pl') {
-        currentLogin = 'student.' + randomStr;
-        currentDomain = 'edu.pl';
+        login = 'student.' + randomStr;
+        domain = 'esiom.com';
       } else {
-        currentLogin = 'random.' + randomStr;
-        currentDomain = domainsList[Math.floor(Math.random() * domainsList.length)];
+        login = 'random.' + randomStr;
+        domain = domainsList[Math.floor(Math.random() * domainsList.length)];
       }
 
-      document.getElementById('emailDisplay').value = `${currentLogin}@${currentDomain}`;
+      currentLogin = login;
+      currentDomain = domain;
+
+      const fullEmail = `${login}@${domain}`;
+      
+      // Tambahkan ke riwayat jika belum ada
+      if (!emailHistory.some(item => item.email === fullEmail)) {
+        emailHistory.unshift({ login, domain, email: fullEmail });
+        if (emailHistory.length > 5) emailHistory.pop(); // Simpan maksimal 5 email terakhir
+        localStorage.setItem('tmpmail_history', JSON.stringify(emailHistory));
+      }
+
+      updateUI();
       checkInbox();
+    }
+
+    function selectEmailFromHistory(index) {
+      if (!emailHistory[index]) return;
+      currentLogin = emailHistory[index].login;
+      currentDomain = emailHistory[index].domain;
+      updateUI();
+      checkInbox();
+    }
+
+    function updateUI() {
+      document.getElementById('emailDisplay').value = `${currentLogin}@${currentDomain}`;
+      renderHistory();
+    }
+
+    function renderHistory() {
+      const historyEl = document.getElementById('historyList');
+      if (!emailHistory.length) {
+        historyEl.innerHTML = `<span class="text-slate-400 text-[11px]">Belum ada riwayat.</span>`;
+        return;
+      }
+
+      const currentEmail = `${currentLogin}@${currentDomain}`;
+      historyEl.innerHTML = emailHistory.map((item, idx) => {
+        const isActive = item.email === currentEmail;
+        return `
+          <button onclick="selectEmailFromHistory(${idx})" class="px-3 py-1.5 rounded-lg border text-xs font-mono transition shrink-0 ${
+            isActive 
+              ? 'bg-blue-600 text-white border-blue-600 font-bold shadow-xs' 
+              : 'bg-slate-50 text-slate-600 border-slate-200 hover:bg-slate-100'
+          }">
+            ${item.email}
+          </button>
+        `;
+      }).join('');
+    }
+
+    function clearHistory() {
+      emailHistory = [];
+      localStorage.removeItem('tmpmail_history');
+      generateNewEmail();
     }
 
     function copyEmail() {
@@ -204,7 +261,7 @@
               <i class="fa-regular fa-envelope text-xl"></i>
             </div>
             <p class="font-semibold text-slate-800 text-sm">Kotak masuk masih kosong</p>
-            <p class="text-xs text-slate-400 mt-1 max-w-xs mx-auto">Pesan baru akan otomatis muncul di sini.</p>
+            <p class="text-xs text-slate-400 mt-1 max-w-xs mx-auto">Menunggu email masuk ke <b>${currentLogin}@${currentDomain}</b>...</p>
           </div>
         `;
         return;
@@ -226,11 +283,7 @@
         const res = await fetch(`/api/message?login=${encodeURIComponent(currentLogin)}&domain=${encodeURIComponent(currentDomain)}&id=${encodeURIComponent(id)}`);
         const msg = await res.json();
         const content = msg.textBody || msg.body || 'Tidak ada isi pesan.';
-        alert(`Pengirim: ${msg.from}
-Subjek: ${msg.subject}
-
-Isi Pesan:
-${content}`);
+        alert(`Pengirim: ${msg.from}\nSubjek: ${msg.subject}\n\nIsi Pesan:\n${content}`);
       } catch(e) {
         alert('Gagal membaca isi pesan.');
       }
