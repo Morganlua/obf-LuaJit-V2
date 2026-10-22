@@ -1,8 +1,7 @@
 {
-  "name": "amprem-generator-suite",
+  "name": "amprem",
   "version": "1.0.0",
   "private": true,
-  "description": "Amprem Generator Suite by Morgan",
   "dependencies": {
     "node-fetch": "^2.6.7"
   }
