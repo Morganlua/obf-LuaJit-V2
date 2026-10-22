@@ -1,53 +1,52 @@
 const fetch = require('node-fetch');
 
+const BASE_SATRIAM = 'https://satriam.satriadeveloperz.workers.dev';
+const UA = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/128.0.0.0 Safari/537.36';
+
 module.exports = async (req, res) => {
   res.setHeader('Access-Control-Allow-Origin', '*');
   res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS');
   res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
 
-  if (req.method === 'OPTIONS') {
-    return res.status(200).end();
+  if (req.method === 'OPTIONS') return res.status(200).end();
+
+  let body = req.body;
+  if (typeof body === 'string') {
+    try { body = JSON.parse(body); } catch(e) {}
+  }
+
+  const email = body?.email || '';
+  const magicLink = body?.magicLink || '';
+
+  if (!email || !magicLink) {
+    return res.status(400).json({ status: false, message: 'Email dan Magic Link wajib diisi' });
   }
 
   try {
-    let body = req.body;
-    if (typeof body === 'string') {
-      try { body = JSON.parse(body); } catch(e) {}
-    }
+    const cleanMagicLink = magicLink.replace(/&amp;/g, '&');
 
-    const email = body?.email || '';
-    const magicLink = body?.magicLink || body?.link || '';
-
-    if (!email || !magicLink) {
-      return res.status(400).json({
-        status: false,
-        message: 'Email dan Magic Link wajib diisi!'
-      });
-    }
-
-    const response = await fetch('https://satriam.satriadeveloperz.workers.dev/api/satriam/verify-link', {
+    const verifyRes = await fetch(`${BASE_SATRIAM}/api/satriam/verify-link`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64)'
+        'User-Agent': UA
       },
-      body: JSON.stringify({ email, magicLink }),
+      body: JSON.stringify({ email, magicLink: cleanMagicLink }),
       timeout: 15000
     });
 
-    const data = await response.json();
+    const verifyData = await verifyRes.json();
+
     return res.status(200).json({
-      status: data.success || true,
-      email: email,
-      membershipStatus: data.membershipStatus || 'PREMIUM_ACTIVE',
-      planName: data.planName || 'Alight Motion Pro / Member',
-      message: data.message || 'Verifikasi manual Magic Link berhasil!'
+      status: true,
+      membershipStatus: verifyData.membershipStatus || 'PREMIUM_ACTIVE',
+      message: 'Verifikasi Magic Link Berhasil!'
     });
 
-  } catch (error) {
+  } catch (err) {
     return res.status(500).json({
       status: false,
-      message: error.message || 'Gagal memproses verifikasi'
+      message: err.message || 'Gagal verifikasi Magic Link'
     });
   }
 };

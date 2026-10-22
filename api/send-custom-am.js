@@ -31,18 +31,16 @@ module.exports = async (req, res) => {
       timeout: 10000
     });
 
-    const regData = await regRes.json();
-
     return res.status(200).json({
       status: true,
       email: email,
-      message: 'Magic Link Alight Motion berhasil dikirim ke email pribadi kamu. Silakan cek inbox email asli kamu untuk verifikasi manual!'
+      message: 'Magic Link berhasil dikirim ke email pribadi kamu. Silakan periksa aplikasi Gmail/Inbox kamu!'
     });
 
   } catch (err) {
     return res.status(500).json({
       status: false,
-      message: err.message || 'Gagal mengirim magic link ke email pribadi'
+      message: err.message || 'Gagal mengirim Magic Link ke email pribadi'
     });
   }
 };
