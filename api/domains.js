@@ -11,8 +11,28 @@ module.exports = async (req, res) => {
   try {
     const response = await fetch('https://www.1secmail.com/api/v1/?action=getDomainList');
     const data = await response.json();
-    res.status(200).json(data);
+    
+    // Fallback & extended domain list if empty
+    const extendedDomains = [
+      '1secmail.com', 
+      '1secmail.org', 
+      '1secmail.net', 
+      'wwm.ru', 
+      'esiom.com', 
+      'vmail.me', 
+      'kzmk.ru', 
+      'v3mail.org'
+    ];
+
+    const finalDomains = Array.isArray(data) && data.length > 0 
+      ? Array.from(new Set([...data, ...extendedDomains]))
+      : extendedDomains;
+
+    res.status(200).json(finalDomains);
   } catch (error) {
-    res.status(200).json(['1secmail.com', '1secmail.org', '1secmail.net']);
+    res.status(200).json([
+      '1secmail.com', '1secmail.org', '1secmail.net', 
+      'wwm.ru', 'esiom.com', 'vmail.me', 'kzmk.ru'
+    ]);
   }
 };
