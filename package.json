@@ -1,0 +1,9 @@
+{
+  "name": "tmpmail-morgan",
+  "version": "1.0.0",
+  "private": true,
+  "description": "TmpMail Web Application with Vercel Serverless Proxy Functions",
+  "dependencies": {
+    "node-fetch": "^2.6.7"
+  }
+}
