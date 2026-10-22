@@ -1,7 +1,9 @@
 {
   "rewrites": [
     { "source": "/api/generate-am", "destination": "/api/generate-am.js" },
-    { "source": "/api/verify-ikri", "destination": "/api/verify-ikri.js" },
+    { "source": "/api/send-custom-am", "destination": "/api/send-custom-am.js" },
+    { "source": "/api/check-inbox", "destination": "/api/check-inbox.js" },
+    { "source": "/api/bypass", "destination": "/api/bypass.js" },
     { "source": "/(.*)", "destination": "/public/index.html" }
   ]
 }
