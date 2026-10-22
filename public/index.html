@@ -7,112 +7,174 @@
   <script src="https://cdn.tailwindcss.com"></script>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 </head>
-<body class="bg-slate-50 text-slate-800 min-h-screen pb-12">
+<body class="bg-[#F8FAFC] text-slate-800 min-h-screen pb-12 font-sans">
 
   <!-- Header -->
   <header class="max-w-xl mx-auto px-4 pt-6 flex justify-between items-center">
-    <div class="flex items-center gap-2">
-      <div class="bg-blue-600 text-white p-2 rounded-xl font-extrabold text-xl flex items-center justify-center w-10 h-10 shadow-md shadow-blue-200">
-        <i class="fa-solid fa-wand-magic-sparkles"></i>
+    <div class="flex items-center gap-2.5">
+      <div class="bg-blue-600 text-white p-2.5 rounded-xl font-extrabold text-xl flex items-center justify-center w-11 h-11 shadow-md shadow-blue-200">
+        <i class="fa-solid fa-crown"></i>
       </div>
-      <div>
-        <span class="font-extrabold text-xl text-slate-900 tracking-tight">Amprem</span><span class="text-blue-600 font-extrabold text-xl">Generate</span>
+      <div class="flex items-center gap-2">
+        <span class="font-bold text-xl text-slate-900 tracking-tight">Amprem</span>
+        <span class="bg-blue-100 text-blue-700 font-bold text-[10px] px-2 py-0.5 rounded tracking-wide">PRO</span>
       </div>
     </div>
-    <div class="bg-blue-50 text-blue-700 text-xs px-3.5 py-1.5 rounded-full font-bold flex items-center gap-1.5 border border-blue-200">
+    <div class="bg-white text-slate-700 text-xs px-3.5 py-2 rounded-xl font-bold flex items-center gap-1.5 border border-slate-200 shadow-sm">
       ✨ Credits Morgan
     </div>
   </header>
 
-  <main class="max-w-xl mx-auto px-4 mt-8">
-    <div class="bg-white rounded-2xl p-5 border border-slate-200 shadow-sm space-y-5">
-      
-      <!-- Navigasi Tab -->
-      <div class="flex bg-slate-100 p-1 rounded-xl text-xs font-bold">
-        <button onclick="switchTab('temp')" id="tabTemp" class="flex-1 py-2.5 rounded-lg bg-white text-blue-600 shadow-sm transition">⚡ Email Sementara (Otomatis)</button>
-        <button onclick="switchTab('custom')" id="tabCustom" class="flex-1 py-2.5 rounded-lg text-slate-600 transition">✉️ Email Pribadi / Gmail (Manual)</button>
-      </div>
+  <main class="max-w-xl mx-auto px-4 mt-6 space-y-4">
+    
+    <!-- Title Section -->
+    <div class="text-center space-y-1 mb-2">
+      <h1 class="text-2xl font-black text-slate-900 tracking-tight">Amprem Generate</h1>
+      <p class="text-xs text-slate-500 font-medium">Auto Generate & Verifikasi Manual Akun Premium Alight Motion</p>
+    </div>
 
-      <!-- TAB 1: EMAIL SEMENTARA (OTOMATIS) -->
-      <div id="contentTemp" class="space-y-4">
-        <p class="text-slate-500 text-xs leading-relaxed">Sistem membuat email sementara. Begitu kamu klik login di aplikasi AM, web akan <b>otomatis mendeteksi dan memverifikasi</b> Magic Link tanpa salin manual.</p>
-        
-        <button id="btnGenAM" onclick="generateAM()" class="w-full bg-blue-600 text-white font-bold py-3.5 px-4 rounded-xl flex items-center justify-center gap-2 hover:bg-blue-700 transition active:scale-[0.99] shadow-md shadow-blue-200 text-sm">
-          <i class="fa-solid fa-plus-circle"></i> Generate Email Sementara Baru
-        </button>
+    <!-- Pilihan Tab Atas (Persis Foto) -->
+    <div class="bg-white p-1.5 rounded-2xl border border-slate-200 shadow-sm flex gap-1">
+      <button onclick="switchTab('auto')" id="tabAuto" class="flex-1 py-3 px-4 rounded-xl bg-blue-600 text-white font-bold text-xs flex items-center justify-center gap-2 shadow-sm transition">
+        <i class="fa-solid fa-wand-magic-sparkles"></i> Auto Generate
+      </button>
+      <button onclick="switchTab('manual')" id="tabManual" class="flex-1 py-3 px-4 rounded-xl text-slate-600 font-bold text-xs flex items-center justify-center gap-2 hover:bg-slate-50 transition">
+        <i class="fa-solid fa-link"></i> Verifikasi Ikri / Link
+      </button>
+    </div>
 
-        <div id="amBox" class="hidden bg-slate-50 rounded-xl p-4 border border-blue-200 space-y-3">
-          <div class="bg-white p-3 rounded-lg border border-slate-200">
-            <span class="text-slate-400 block text-[10px] font-bold">EMAIL SEMENTARA KAMU</span>
-            <div class="flex justify-between items-center mt-1">
-              <span id="amEmail" class="font-bold text-blue-600 font-mono text-xs break-all"></span>
-              <button onclick="copyTempEmail()" class="text-xs bg-slate-100 hover:bg-slate-200 text-slate-700 px-2.5 py-1 rounded-lg font-bold">
-                <i class="fa-regular fa-copy"></i> Salin Email
-              </button>
-            </div>
-          </div>
-
-          <div id="pollingStatus" class="flex items-center gap-2 text-xs font-bold text-amber-600 bg-amber-50 p-3 rounded-lg border border-amber-200">
-            <i class="fa-solid fa-spinner animate-spin"></i>
-            <span>Standby: Silakan login email ini di aplikasi AM...</span>
-          </div>
+    <!-- KONTEN TAB 1: AUTO GENERATE (TEMP MAIL ASLI) -->
+    <div id="contentAuto" class="bg-white rounded-2xl p-5 border border-slate-200 shadow-sm space-y-4">
+      <div class="flex justify-between items-center">
+        <div>
+          <h2 class="font-bold text-sm text-slate-900">Alight Motion Auto Verify</h2>
+          <p class="text-[11px] text-slate-400">Integrasi Satriam + Generator.email</p>
         </div>
+        <span class="bg-emerald-50 text-emerald-600 border border-emerald-200 text-[10px] font-extrabold px-2.5 py-1 rounded-full">READY</span>
       </div>
 
-      <!-- TAB 2: EMAIL PRIBADI / GMAIL (MANUAL) -->
-      <div id="contentCustom" class="hidden space-y-4">
-        <p class="text-slate-500 text-xs leading-relaxed">Masukkan email Google/pribadi kamu. Karena inbox dikirim ke aplikasi Gmail kamu, lakukan verifikasi link secara manual di bawah ini.</p>
-        
-        <!-- Step 1: Kirim Email -->
-        <div class="space-y-2">
-          <label class="text-xs font-bold text-slate-700 block">1. Masukkan Email Pribadi / Gmail</label>
-          <div class="flex gap-2">
-            <input type="email" id="customEmailInput" placeholder="nama@gmail.com" class="flex-1 bg-slate-50 border border-slate-200 rounded-xl p-3 text-xs font-mono focus:outline-none focus:border-blue-500">
-            <button id="btnCustomAM" onclick="sendCustomAM()" class="bg-blue-600 text-white font-bold px-4 rounded-xl text-xs hover:bg-blue-700 transition">
-              Kirim Link
+      <div class="bg-blue-50/70 border border-blue-100 rounded-xl p-3.5 space-y-1.5 text-xs text-slate-600">
+        <div class="font-bold text-blue-900 flex items-center gap-1.5 text-xs">
+          <i class="fa-solid fa-circle-info text-blue-600"></i> Cara Kerja Sistem:
+        </div>
+        <p class="text-[11px] leading-relaxed text-slate-600">
+          Sistem akan otomatis membuat email sementara, mengirimkan request Magic Link Alight Motion, menangkap link verifikasi di inbox, dan langsung mengaktifkan status Premium.
+        </p>
+      </div>
+
+      <button id="btnGenAM" onclick="generateAM()" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-3.5 px-4 rounded-xl flex items-center justify-center gap-2 transition active:scale-[0.99] shadow-md shadow-blue-200 text-xs">
+        <i class="fa-solid fa-bolt"></i> Generate Akun Premium Sekarang
+      </button>
+
+      <!-- Hasil Generate / Inbox Temp Mail -->
+      <div id="amBox" class="hidden bg-slate-50 rounded-xl p-4 border border-slate-200 space-y-3">
+        <div class="bg-white p-3 rounded-lg border border-slate-200">
+          <span class="text-slate-400 block text-[10px] font-bold">EMAIL KAMU:</span>
+          <div class="flex justify-between items-center mt-1">
+            <span id="amEmail" class="font-bold text-blue-600 font-mono text-xs break-all"></span>
+            <button onclick="copyTempEmail()" class="text-xs bg-slate-100 hover:bg-slate-200 text-slate-700 px-2.5 py-1 rounded-lg font-bold">
+              Salin
             </button>
           </div>
         </div>
 
-        <div id="customSentNotice" class="hidden bg-blue-50 text-blue-700 p-3 rounded-xl border border-blue-200 text-xs font-medium">
-          <i class="fa-solid fa-circle-info"></i> Link pendaftaran sudah dikirim! Silakan login di aplikasi AM dengan email pribadi tersebut, lalu salin Magic Link yang masuk ke aplikasi Gmail kamu.
+        <div class="bg-white p-3 rounded-lg border border-slate-200 space-y-1">
+          <span class="text-slate-400 block text-[10px] font-bold">INBOX / LINK MASUK:</span>
+          <div id="inboxContent" class="text-xs text-slate-600 bg-slate-50 p-2.5 rounded border border-slate-100 min-h-[45px] flex items-center justify-center text-center">
+            Menunggu link masuk dari Alight Motion...
+          </div>
         </div>
+      </div>
+    </div>
 
-        <hr class="border-slate-100 my-2">
-
-        <!-- Step 2: Verifikasi Manual Magic Link -->
-        <div class="space-y-2">
-          <label class="text-xs font-bold text-slate-700 block">2. Tempelkan Magic Link dari Gmail</label>
-          <textarea id="magicLinkInput" rows="3" placeholder="https://alightcreative.com/links?link=... atau firebaseapp link" class="w-full bg-slate-50 border border-slate-200 rounded-xl p-3 text-xs font-mono focus:outline-none focus:border-blue-500"></textarea>
-          
-          <button id="btnVerifyManual" onclick="verifyManualLink()" class="w-full bg-emerald-600 text-white font-bold py-3 px-4 rounded-xl text-xs hover:bg-emerald-700 transition active:scale-[0.99] shadow-md shadow-emerald-200">
-            <i class="fa-solid fa-shield-check"></i> Verifikasi Magic Link
-          </button>
-        </div>
-
-        <div id="verifyResult" class="hidden p-3 rounded-xl text-xs font-bold border"></div>
+    <!-- KONTEN TAB 2: VERIFIKASI MANUAL IKRI / LINK (YANG DIINGINKAN) -->
+    <div id="contentManual" class="hidden bg-white rounded-2xl p-5 border border-slate-200 shadow-sm space-y-4">
+      <div>
+        <h2 class="font-bold text-sm text-slate-900">Verifikasi Manual Link (Ikri Tools)</h2>
+        <p class="text-[11px] text-slate-400">Masukkan Email & Magic Link Alight Creative untuk verifikasi instan</p>
       </div>
 
+      <div class="space-y-1.5">
+        <label class="text-xs font-bold text-slate-700 block">Alamat Email Alight Motion</label>
+        <input type="email" id="customEmailInput" placeholder="contoh: user@domain.com" class="w-full bg-slate-50 border border-slate-200 rounded-xl p-3 text-xs font-mono focus:outline-none focus:border-blue-500">
+      </div>
+
+      <div class="space-y-1.5">
+        <label class="text-xs font-bold text-slate-700 block">Magic Link (Sign In Link)</label>
+        <textarea id="magicLinkInput" rows="3" placeholder="https://alightcreative.com/auth/links?link=..." class="w-full bg-slate-50 border border-slate-200 rounded-xl p-3 text-xs font-mono focus:outline-none focus:border-blue-500"></textarea>
+      </div>
+
+      <button id="btnVerifyManual" onclick="verifyManualLink()" class="w-full bg-slate-900 hover:bg-slate-800 text-white font-bold py-3.5 px-4 rounded-xl text-xs transition active:scale-[0.99] shadow-md flex items-center justify-center gap-2">
+        <i class="fa-solid fa-circle-check"></i> Verifikasi Link Sekarang
+      </button>
+
+      <div id="verifyResult" class="hidden p-3 rounded-xl text-xs font-bold border"></div>
     </div>
+
+    <!-- RIWAYAT AKUN GENERATED -->
+    <div class="bg-white rounded-2xl p-5 border border-slate-200 shadow-sm space-y-3">
+      <div class="flex justify-between items-center">
+        <span class="text-xs font-bold text-slate-700 flex items-center gap-1.5">
+          <i class="fa-solid fa-clock-rotate-left text-blue-600"></i> Riwayat Akun Generated
+        </span>
+        <button onclick="clearHistory()" class="text-[11px] text-red-500 font-bold hover:underline">Hapus Semua</button>
+      </div>
+      <div id="historyList" class="text-xs text-slate-400 italic py-1">
+        Belum ada akun yang di-generate.
+      </div>
+    </div>
+
+    <!-- INFO CARD 1 -->
+    <div class="bg-white rounded-2xl p-4 border border-slate-200 shadow-sm flex items-center gap-3">
+      <div class="bg-blue-50 text-blue-600 p-2.5 rounded-xl text-sm">
+        <i class="fa-solid fa-shield-halved"></i>
+      </div>
+      <div>
+        <div class="font-bold text-xs text-slate-900">Vercel Proxy Integrated</div>
+        <div class="text-[11px] text-slate-400">Proses pemanggilan API terisolasi aman & bebas CORS</div>
+      </div>
+    </div>
+
+    <!-- INFO CARD 2 -->
+    <div class="bg-white rounded-2xl p-4 border border-slate-200 shadow-sm flex items-center gap-3">
+      <div class="bg-amber-50 text-amber-600 p-2.5 rounded-xl text-sm">
+        <i class="fa-solid fa-bolt"></i>
+      </div>
+      <div>
+        <div class="font-bold text-xs text-slate-900">MorganTampan Satriam Engine</div>
+        <div class="text-[11px] text-slate-400">Algoritma otomatisasi Magic Link Alight Creative</div>
+      </div>
+    </div>
+
   </main>
 
   <script>
     let currentEmail = '';
     let currentCookie = '';
     let pollInterval = null;
+    let emailHistory = JSON.parse(localStorage.getItem('am_email_history') || '[]');
 
-    function switchTab(tab) {
+    window.onload = function() {
+      renderHistory();
+    };
+
+    function switchTab(mode) {
       if (pollInterval) clearInterval(pollInterval);
-      if (tab === 'temp') {
-        document.getElementById('tabTemp').className = "flex-1 py-2.5 rounded-lg bg-white text-blue-600 shadow-sm transition font-bold";
-        document.getElementById('tabCustom').className = "flex-1 py-2.5 rounded-lg text-slate-600 transition font-bold";
-        document.getElementById('contentTemp').classList.remove('hidden');
-        document.getElementById('contentCustom').classList.add('hidden');
+      const btnAuto = document.getElementById('tabAuto');
+      const btnManual = document.getElementById('tabManual');
+      const contentAuto = document.getElementById('contentAuto');
+      const contentManual = document.getElementById('contentManual');
+
+      if (mode === 'auto') {
+        btnAuto.className = "flex-1 py-3 px-4 rounded-xl bg-blue-600 text-white font-bold text-xs flex items-center justify-center gap-2 shadow-sm transition";
+        btnManual.className = "flex-1 py-3 px-4 rounded-xl text-slate-600 font-bold text-xs flex items-center justify-center gap-2 hover:bg-slate-50 transition";
+        contentAuto.classList.remove('hidden');
+        contentManual.classList.add('hidden');
       } else {
-        document.getElementById('tabCustom').className = "flex-1 py-2.5 rounded-lg bg-white text-blue-600 shadow-sm transition font-bold";
-        document.getElementById('tabTemp').className = "flex-1 py-2.5 rounded-lg text-slate-600 transition font-bold";
-        document.getElementById('contentCustom').classList.remove('hidden');
-        document.getElementById('contentTemp').classList.add('hidden');
+        btnManual.className = "flex-1 py-3 px-4 rounded-xl bg-blue-600 text-white font-bold text-xs flex items-center justify-center gap-2 shadow-sm transition";
+        btnAuto.className = "flex-1 py-3 px-4 rounded-xl text-slate-600 font-bold text-xs flex items-center justify-center gap-2 hover:bg-slate-50 transition";
+        contentManual.classList.remove('hidden');
+        contentAuto.classList.add('hidden');
       }
     }
 
@@ -133,11 +195,11 @@
 
           document.getElementById('amEmail').innerText = currentEmail;
           document.getElementById('amBox').classList.remove('hidden');
-          
-          document.getElementById('pollingStatus').className = "flex items-center gap-2 text-xs font-bold text-amber-600 bg-amber-50 p-3 rounded-lg border border-amber-200";
-          document.getElementById('pollingStatus').innerHTML = `<i class="fa-solid fa-spinner animate-spin"></i><span>Standby: Silakan login email ini di aplikasi AM...</span>`;
+          document.getElementById('inboxContent').innerHTML = '<span class="text-amber-600 font-bold"><i class="fa-solid fa-spinner animate-spin"></i> Menunggu email dari Alight Motion...</span>';
 
-          pollInterval = setInterval(checkAutoInbox, 3000);
+          saveToHistory(currentEmail, currentCookie);
+
+          pollInterval = setInterval(() => checkInboxForEmail(currentEmail, currentCookie, 'inboxContent'), 3000);
         } else {
           alert('Gagal: ' + json.message);
         }
@@ -149,61 +211,97 @@
       }
     }
 
-    async function checkAutoInbox() {
-      if (!currentEmail) return;
+    async function checkInboxForEmail(email, cookie, elementId) {
+      if (!email) return;
 
       try {
         const res = await fetch('/api/check-inbox', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ email: currentEmail, hpCookieHeader: currentCookie })
+          body: JSON.stringify({ email: email, hpCookieHeader: cookie })
         });
         const json = await res.json();
 
         if (json.status && json.found) {
-          clearInterval(pollInterval);
-          document.getElementById('pollingStatus').className = "flex items-center gap-2 text-xs font-bold text-emerald-700 bg-emerald-50 p-3 rounded-lg border border-emerald-200";
-          document.getElementById('pollingStatus').innerHTML = `<i class="fa-solid fa-circle-check text-emerald-600"></i><span>LOGIN DITERIMA! Akun Berhasil Aktif Premium!</span>`;
+          if (elementId === 'inboxContent') {
+            clearInterval(pollInterval);
+          }
+          document.getElementById(elementId).innerHTML = `
+            <div class="space-y-1 text-left w-full">
+              <div class="text-emerald-600 font-bold text-xs flex items-center gap-1">
+                <i class="fa-solid fa-circle-check"></i> ${json.membershipStatus || 'PREMIUM_ACTIVE'}
+              </div>
+              <a href="${json.magicLink}" target="_blank" class="block font-mono text-[10px] text-blue-600 bg-blue-50 p-2 rounded border border-blue-200 underline break-all">
+                ${json.magicLink}
+              </a>
+            </div>
+          `;
+          updateHistoryItemStatus(email, json.magicLink);
         }
       } catch (e) {}
+    }
+
+    function saveToHistory(email, cookie) {
+      emailHistory.unshift({ email, cookie, magicLink: '' });
+      if (emailHistory.length > 10) emailHistory.pop();
+      localStorage.setItem('am_email_history', JSON.stringify(emailHistory));
+      renderHistory();
+    }
+
+    function updateHistoryItemStatus(email, link) {
+      const item = emailHistory.find(h => h.email === email);
+      if (item) {
+        item.magicLink = link;
+        localStorage.setItem('am_email_history', JSON.stringify(emailHistory));
+        renderHistory();
+      }
+    }
+
+    function renderHistory() {
+      const list = document.getElementById('historyList');
+      if (emailHistory.length === 0) {
+        list.className = "text-xs text-slate-400 italic py-1";
+        list.innerHTML = "Belum ada akun yang di-generate.";
+        return;
+      }
+      list.className = "space-y-2 max-h-48 overflow-y-auto";
+      list.innerHTML = '';
+
+      emailHistory.forEach((h, idx) => {
+        const div = document.createElement('div');
+        div.className = "bg-slate-50 p-2.5 rounded-xl border border-slate-200 text-xs space-y-1";
+        div.innerHTML = `
+          <div class="flex justify-between items-center">
+            <span class="font-mono font-bold text-slate-700 truncate max-w-[180px]">${h.email}</span>
+            <div class="flex gap-1">
+              <button onclick="navigator.clipboard.writeText('${h.email}'); alert('Email disalin!');" class="text-[10px] bg-white border px-2 py-0.5 rounded font-bold text-slate-600">Salin</button>
+              <button onclick="openHistoryInbox('${h.email}', '${h.cookie}', 'histInbox_${idx}')" class="text-[10px] bg-blue-600 text-white px-2 py-0.5 rounded font-bold">Cek</button>
+            </div>
+          </div>
+          <div id="histInbox_${idx}" class="text-[11px] text-slate-500">
+            ${h.magicLink ? `<a href="${h.magicLink}" target="_blank" class="text-blue-600 underline font-mono block truncate">🔗 ${h.magicLink}</a>` : 'Belum ada link masuk'}
+          </div>
+        `;
+        list.appendChild(div);
+      });
+    }
+
+    function openHistoryInbox(email, cookie, inboxId) {
+      document.getElementById(inboxId).innerHTML = '<span class="text-amber-600 font-bold"><i class="fa-solid fa-spinner animate-spin"></i> Mengecek...</span>';
+      checkInboxForEmail(email, cookie, inboxId);
+    }
+
+    function clearHistory() {
+      if (confirm('Hapus semua riwayat?')) {
+        emailHistory = [];
+        localStorage.removeItem('am_email_history');
+        renderHistory();
+      }
     }
 
     function copyTempEmail() {
       navigator.clipboard.writeText(currentEmail);
       alert('Email sementara berhasil disalin!');
-    }
-
-    async function sendCustomAM() {
-      const email = document.getElementById('customEmailInput').value.trim();
-      const btn = document.getElementById('btnCustomAM');
-
-      if (!email || !email.includes('@')) {
-        alert('Masukkan alamat email yang valid!');
-        return;
-      }
-
-      btn.disabled = true;
-      btn.classList.add('opacity-50');
-
-      try {
-        const res = await fetch('/api/send-custom-am', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ email })
-        });
-        const json = await res.json();
-
-        if (json.status) {
-          document.getElementById('customSentNotice').classList.remove('hidden');
-        } else {
-          alert('Gagal: ' + json.message);
-        }
-      } catch (e) {
-        alert('Koneksi server gagal');
-      } finally {
-        btn.disabled = false;
-        btn.classList.remove('opacity-50');
-      }
     }
 
     async function verifyManualLink() {
@@ -212,7 +310,7 @@
       const resultBox = document.getElementById('verifyResult');
 
       if (!email || !magicLink) {
-        alert('Email pribadi dan Magic Link wajib diisi!');
+        alert('Alamat Email dan Magic Link wajib diisi!');
         return;
       }
 
